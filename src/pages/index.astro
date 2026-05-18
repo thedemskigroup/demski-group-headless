@@ -1,0 +1,1764 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const res = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=6');
+const posts = await res.json();
+
+const resultsRes = await fetch('https://demskigroup.com/wp-json/wp/v2/results?_embed&per_page=6');
+const results = await resultsRes.json();
+---
+
+<Layout title="The Demski Group - Custom Software Development">
+<style slot="head">
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@700,600,500,400&display=swap');
+
+/* ─── SECTION 0: HERO ─── */
+html {
+    overflow-x: hidden;
+}
+.hero {
+  position: relative;
+  min-height: 610px;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+  background-image: url('/public/hero-image.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding-bottom: 128px;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(96deg, #FFFFFFFC 43%, #00236800 85%);
+  opacity: 0.99;
+  z-index: 1;
+}
+.hero-curve {
+  position: absolute;
+  bottom: -1px;
+  left: -10%;
+  width: 120%;
+  height: 91px;
+  background: white;
+  clip-path: ellipse(50% 100% at 50% 100%);
+  z-index: 2;
+}
+.hero-inner {
+  position: relative;
+  z-index: 3;
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 60px;
+  display: flex;
+  align-items: center;
+}
+.hero-text { max-width: 540px; flex-shrink: 0; }
+.hero-text h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 65px;
+  font-weight: 600;
+  color: #0A0000;
+  line-height: 1.04;
+  margin-bottom: 14px;
+}
+.hero-typed {
+  font-family: 'Outfit', sans-serif;
+  font-size: 58px;
+  font-weight: 300;
+  color: #0154b1;
+  line-height: 1;
+  letter-spacing: 0.6px;
+  margin-bottom: 24px;
+  min-height: 68px;
+}
+.hero-text p {
+  font-size: 20px;
+  color: #444;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 420px;
+}
+.btn-orange {
+  display: inline-block;
+  background: #F09300;
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid #F09300;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+  animation: fadeInUp 0.6s ease both;
+  animation-delay: 0.3s;
+}
+.btn-orange:hover { background: #fff; color: #0A102F; border-color: #3147FF; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── SECTION 2: BRANDS ─── */
+.brands-wrap {
+  max-width: 1200px;
+  margin: -145px auto 0;
+  position: relative;
+  z-index: 10;
+  background: white;
+  border-radius: 25px;
+  box-shadow: 0 0 35px 7px rgba(0, 0, 0, .24);
+  padding: 34px 44px;
+  display: flex;
+  gap: 0;
+}
+.brands-label {
+  font-size: 25px;
+  color: #444;
+  min-width: 400px;
+  line-height: 1.6;
+  padding-right: 36px;
+  padding-left: 10px;
+  border-right: 2px solid #6d6d6d;
+  flex-shrink: 0;
+  text-align: center;
+  align-content: center;
+}
+.brands-label a { color: #0154b1; text-decoration: none; font-weight: 600; }
+.brands-label a:hover { text-decoration: underline; }
+.brands-logo-img {
+  flex: 1;
+  padding-left: 36px;
+}
+.brands-logo-img img {
+  width: 100%;
+  height: auto;
+  max-height: 170px;
+  object-fit: contain;
+  display: block;
+}
+/* ─── SECTION 3: SERVICES ─── */
+.services-section { background: #FFFFFF; padding: 80px 30px; }
+.services-inner { max-width: 1300px; margin: 0 auto; }
+.services-header {
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 30px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.services-header h2 {
+  font-family: 'General Sans', sans-serif;
+  font-size: 46px;
+  font-weight: 600;
+  color: #1B1C1D;
+  line-height: 1.1;
+  max-width: 100%;
+}
+.btn-outline {
+  display: inline-block;
+  border: 2px solid #0154b1;
+  color: #0154b1;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.25s;
+}
+.btn-outline:hover { background: #0154b1; color: white; }
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.service-card {
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 32px 28px;
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+.service-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.09); transform: translateY(-3px); }
+.service-card i {
+  font-size: 40px;
+  color: #0154b1;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.service-card h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 35px;
+  font-weight: 600;
+  color: #282828;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+.service-card p { font-size: 18px; color: #000; line-height: 1.65; }
+
+/* ─── SECTION 5: TECH STACK ─── */
+.tech-section {
+  background: #F0F0F0;
+  padding: 80px 0;
+  position: relative;
+  overflow: hidden;
+}
+.tech-curve-top {
+  position: absolute;
+  top: -1px;
+  left: -10%;
+  width: 120%;
+  height: 80px;
+  background: white;
+  clip-path: ellipse(50% 100% at 50% 0%);
+  z-index: 2;
+}
+
+.tech-inner {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 0px;
+  position: relative;
+  z-index: 3;
+}
+.tech-inner h2 {
+  font-family: 'outfit', sans-serif;
+  font-size: 50px;
+  font-weight: 600;
+  color: #3A3A3A;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.tech-inner .sub {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 50px;
+}
+
+/* Marquee */
+.marquee-wrapper { display: flex; flex-direction: column; gap: 40px; overflow: hidden; }
+.marquee-track {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  animation: marquee-scroll 28s linear infinite;
+}
+.marquee-track.reverse {
+  animation-direction: reverse;
+  animation-duration: 34s;
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.tech-tag {
+  padding: 12px 28px;
+  font-size: 35px;
+  font-weight: 600;
+  color: #868686;
+  transition: all 0.2s;
+  cursor: default;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.tech-see-all { text-align: center; margin-top: 40px; position: relative; z-index: 3; }
+.btn-outline-dark {
+  display: inline-block;
+  border: 2px solid #333;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.25s;
+}
+.btn-outline-dark:hover { background: #333; color: white; }
+
+/* ─── SECTION 7: CLIENTS ─── */
+.clients-section {
+  background: #FFFFFF;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Top: image left, text right */
+.clients-top {
+  display: flex;
+  align-items: stretch;
+  min-height: 480px;
+}
+.clients-left {
+  flex: 0 0 34%;
+  position: relative;
+}
+.clients-left img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+.clients-right {
+  flex: 1;
+  padding: 80px 80px 60px 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #f7f7f7;
+}
+.clients-right h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 50px;
+  font-weight: 700;
+  color: #0A0000;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+.clients-right p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 36px;
+  line-height: 1.6;
+}
+.btn-outline-clients {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 1.5px solid #1a1a1a;
+  color: #0A0000;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 50px;
+  text-decoration: none;
+  width: fit-content;
+  transition: all 0.25s;
+}
+.btn-outline-clients:hover { background: #0A0000; color: white; }
+.btn-outline-clients .arrow-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #0A0000;
+  color: white;
+  border-radius: 50%;
+  font-size: 13px;
+  transition: all 0.25s;
+}
+.btn-outline-clients:hover .arrow-circle { background: white; color: #0A0000; }
+
+/* Slider row — overlaps image bottom */
+.testimonial-slider-wrap {
+  position: relative;
+  margin-top: -120px;
+  padding: 0 0 60px 0;
+  z-index: 5;
+}
+.testimonial-slider {
+  display: flex;
+  gap: 16px;
+  padding: 0 60px 0 calc(34% - 16px);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+.testimonial-slider::-webkit-scrollbar { display: none; }
+
+.testimonial-card-new {
+  flex: 0 0 360px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+}
+.tcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.tcard-quote {
+  font-size: 38px;
+  color: #b0c4d8;
+  line-height: 1;
+  font-family: Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+.tcard-logo img {
+  height: 34px;
+  width: auto;
+  object-fit: contain;
+  max-width: 100px;
+}
+.tcard-logo-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: #111;
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+.tcard-body {
+  font-size: 14.5px;
+  color: #333;
+  line-height: 1.75;
+  flex: 1;
+  margin-bottom: 24px;
+}
+.tcard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: auto;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 16px;
+}
+.tcard-author { font-size: 14px; font-weight: 600; color: #0A0000; margin-bottom: 2px; }
+.tcard-role { font-size: 13px; color: #999; }
+.tcard-case {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0A0000;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.tcard-case:hover { color: #0154b1; }
+
+/* Left / Right nav buttons */
+.slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border: 1.5px solid #ddd;
+  color: #0154b1;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+.slider-btn:hover { background: #0154b1; color: white; border-color: #0154b1; }
+.slider-btn-prev { left: 16px; }
+.slider-btn-next { right: 16px; }
+
+@media (max-width: 900px) {
+  .clients-top { flex-direction: column; }
+  .clients-left { min-height: 300px; flex: none; }
+  .clients-right { padding: 40px 24px; background: #fff; }
+  .clients-right h2 { font-size: 30px; }
+  .testimonial-slider-wrap { margin-top: 0; }
+  .testimonial-slider { padding: 20px 20px; }
+  .testimonial-card-new { flex: 0 0 290px; }
+  .slider-btn { display: none; }
+}
+
+/* ─── SECTION 8: EXCELLENCE ─── */
+.excellence-section {
+  background: #ffffff;
+  padding: 60px 30px 80px;
+}
+.excellence-card {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #0C0C0C;
+  border-radius: 28px;
+  overflow: hidden;
+  padding: 70px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+.excellence-top {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.excellence-left {
+  flex: 1;
+  padding-right: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+.excellence-left h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 50px;
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1.15;
+  margin: 0;
+}
+.excellence-left p {
+  font-size: 18px;
+  color: #aaa;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 320px;
+}
+.btn-outline-excellence {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid #4798ed;
+  color: #4798ed;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: 50px;
+  text-decoration: none;
+  width: fit-content;
+  transition: all 0.25s;
+  margin-top: 10px;
+}
+.btn-outline-excellence:hover { background: #4798ed; color: #0C0C0C; }
+.btn-outline-excellence .arrow-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #4798ed;
+  color: #0C0C0C;
+  border-radius: 50%;
+  font-size: 12px;
+  transition: all 0.25s;
+}
+.btn-outline-excellence:hover .arrow-circle { background: #0C0C0C; color: #4798ed; }
+
+.excellence-divider {
+  width: 1px;
+  background: #333;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+.excellence-right {
+  flex: 1;
+  padding-left: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.badge-rotator {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+.badge-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+.badge-slide.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.badge-slide img {
+  max-width: 500px;
+  max-height: 500px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.cissp-badge {
+  background: white;
+  border-radius: 20px;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.cissp-badge img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Bottom ratings */
+.excellence-bottom {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  border-top: 1px solid #222;
+  padding-top: 50px;
+}
+.rating-col {
+  flex: 1;
+  text-align: center;
+  padding: 0 40px;
+}
+.rating-col:first-child {
+  border-right: 1px solid #222;
+}
+.rating-col-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 43px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 14px;
+}
+.rating-col-stars {
+  color: #F09300;
+  font-size: 40px;
+  letter-spacing: 4px;
+}
+
+@media (max-width: 768px) {
+  .excellence-card { padding: 40px 24px; gap: 40px; }
+  .excellence-top { flex-direction: column; gap: 40px; }
+  .excellence-left { padding-right: 0; }
+  .excellence-divider { width: 100%; height: 1px; }
+  .excellence-right { padding-left: 0; }
+  .excellence-left h2 { font-size: 32px; }
+  .rating-col-label { font-size: 20px; }
+}
+
+/* ─── SECTION 9: PROCESS ─── */
+.process-section {
+  background: #f0f0f0;
+  padding: 100px 30px 140px;
+  position: relative;
+  overflow: hidden;
+}
+.process-section::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -10%;
+  width: 120%;
+  height: 80px;
+  background: #ffffff;
+  clip-path: ellipse(50% 100% at 50% 0%);
+  z-index: 2;
+}
+.process-section::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: -10%;
+  width: 120%;
+  height: 80px;
+  background: #ffffff;
+  clip-path: ellipse(50% 100% at 50% 100%);
+  z-index: 2;
+}
+.process-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.process-heading {
+  text-align: center;
+  margin-bottom: 70px;
+}
+.process-heading h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 50px;
+  font-weight: 700;
+  color: #0A0000;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.process-heading p {
+  font-size: 18px;
+  color: #666;
+  line-height: 1.7;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.process-body {
+  display: flex;
+  gap: 60px;
+  align-items: flex-start;
+}
+
+/* ── Timeline steps (left) ── */
+.process-steps {
+  flex: 1;
+  position: relative;
+}
+.process-line-track {
+  position: absolute;
+  left: 21px;
+  top: 30px;
+  bottom: 30px;
+  width: 2px;
+  background: #e0e0e0;
+  z-index: 0;
+}
+.process-line-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: #0154b1;
+  border-radius: 2px;
+}
+.process-step {
+  display: flex;
+  gap: 24px;
+  padding: 0 0 44px 0;
+  position: relative;
+  z-index: 1;
+}
+.process-step:last-child { padding-bottom: 0; }
+
+/* Dot */
+.step-dot-wrap {
+  flex-shrink: 0;
+  padding-top: 22px;
+}
+.step-dot {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #e0e0e0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: #ccc;
+  transition: border-color 0.4s, color 0.4s, background 0.4s;
+}
+.process-step.active .step-dot {
+  border-color: #0154b1;
+  color: #0154b1;
+  background: #fff;
+}
+
+/* Card */
+.step-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.step-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0154b1;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+.step-card {
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 14px;
+  padding: 22px 26px 24px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+.process-step.active .step-card {
+  border-color: #0154b1;
+  box-shadow: 0 6px 28px rgba(1,84,177,0.12);
+}
+.step-card h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  color: #0A0000;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.step-card p {
+  font-size: 18px;
+  color: #555;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Right sticky column ── */
+.process-right {
+  flex: 0 0 300px;
+  position: sticky;
+  top: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 40px;
+  overflow: visible;
+  position: relative;  /* so absolute child positions relative to this */
+}
+.process-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.btn-back-arrow {
+  font-size: 34px;
+  font-weight: 900;
+  color: #0A0000;
+  display: inline-block;
+  line-height: 1;
+  animation: arrow-slide 1.4s ease-in-out infinite;
+  text-decoration: none;
+}
+@keyframes arrow-slide {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(-12px); }
+  100% { transform: translateX(0); }
+}
+.btn-orange-process {
+  display: inline-block;
+  background: #F09300;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.3s;
+}
+.btn-orange-process:hover { background: #d98200; }
+
+/* Rotated diamond card */
+.process-deco-card {
+  position: absolute;
+  right: -180px;
+  top: 50%;
+  transform: translateY(-50%) rotate(20deg);
+  width: 600px;
+  height: 600px;
+  background: #fff;
+  border-radius: 80px;
+  box-shadow: 0 12px 60px rgba(0,0,0,0.06);
+  flex-shrink: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Mobile ── */
+@media (max-width: 900px) {
+  .process-section::before { width: 200%; height: 60%; border-radius: 50%; }
+  .process-body { flex-direction: column; gap: 40px; }
+  .process-right { position: static; flex-direction: row; flex-wrap: wrap; gap: 20px; }
+  .process-deco-card { display: none; }
+  .process-heading h2 { font-size: 32px; }
+}
+
+/* ─── SHARED: BLOG + RESULTS ─── */
+.blog-section { background: #fff; padding: 80px 30px; }
+.results-section { background: #fff; padding: 0 30px 80px; }
+
+.section-inner { max-width: 1300px; margin: 0 auto; }
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.section-header h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 50px;
+  font-weight: 700;
+  color: #0A0000;
+}
+.section-header p {
+  font-size: 18px;
+  color: #666;
+  margin-top: 6px;
+}
+.btn-see-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid #1a1a1a;
+  color: #0A0000;
+  font-size: 20px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 50px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.25s;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+.btn-see-all:hover { background: #0A0000; color: white; }
+.btn-see-all .arrow-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #0A0000;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  transition: all 0.25s;
+}
+.btn-see-all:hover .arrow-circle { background: white; color: #0A0000; }
+
+/* Slider wrapper */
+.cards-slider-wrap {
+  position: relative;
+  margin-top: 36px;
+}
+.cards-slider {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  padding: 8px 4px 16px;
+}
+.cards-slider::-webkit-scrollbar { display: none; }
+
+/* Card */
+.post-card {
+  flex: 0 0 calc(33.333% - 14px);
+  border-radius: 16px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  position: relative;
+  cursor: pointer;
+  aspect-ratio: 4/3;
+  min-height: 340px;
+  text-decoration: none;
+  display: block;
+  flex-shrink: 0;
+}
+.post-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.post-card:hover img { transform: scale(1.04); }
+.post-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0) 30%,
+    rgba(0,0,0,0.85) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px 22px;
+}
+.post-card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.35;
+  margin-bottom: 12px;
+}
+.post-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.post-card-date {
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+}
+.post-card-read {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+/* Outside nav arrows */
+.cards-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border: 1.5px solid #ddd;
+  border-radius: 50%;
+  font-size: 20px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+.cards-nav:hover { background: #0A0000; color: white; border-color: #0A0000; }
+.cards-nav-prev { left: -56px; }
+.cards-nav-next { right: -56px; }
+
+@media (max-width: 900px) {
+  .post-card { flex: 0 0 80vw; }
+  .cards-nav { display: none; }
+  .section-header h2 { font-size: 28px; }
+}
+
+/* ─── SECTION 12+13: RESULTS ─── */
+.results-section { background: #FFFFFF; padding: 0 30px 150px; }
+.results-inner { max-width: 1200px; margin: 0 auto; }
+.results-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 36px; }
+.results-header h2 {
+  font-family: 'General Sans', sans-serif;
+  font-size: 50px;
+  font-weight: 500;
+  color: #3A3A3A;
+}
+.results-header p { font-size: 18px; color: #555; }
+.results-header a { font-size: 18px; color: #0154b1; font-weight: 600; text-decoration: none; }
+.results-header a:hover { text-decoration: underline; }
+.results-list { display: flex; flex-direction: column; gap: 2px; }
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 28px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.result-row:hover { background: #f9f9f9; }
+.result-title { font-size: 18px; font-weight: 600; color: #0A0000; }
+.result-date { font-size: 14px; color: #999; }
+.result-arrow { font-size: 18px; color: #0154b1; }
+
+/* ─── SECTION 14: FINAL CTA ─── */
+.final-cta {
+  background: #0C0C0C;
+  padding: 0;
+  overflow: visible;
+  position: relative;
+}
+.final-cta-inner {
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  min-height: 280px;
+}
+.final-cta-text {
+  flex: 0 0 50%;
+  padding: 60px 60px 60px 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+}
+.final-cta-text h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+  margin: 0;
+}
+.final-cta-text h2 span {
+  color: #4798ed;
+  display: block;
+}
+.final-cta-image {
+  flex: 1;
+  padding: 0;
+  overflow: visible;
+  display: flex;
+  align-items: flex-start;
+}
+.final-cta-image img {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-radius: 16px 0 0 16px;
+  margin-top: -75px;
+    margin-bottom: 75px;
+}
+
+@media (max-width: 768px) {
+  .final-cta-inner { flex-direction: column; }
+  .final-cta-text { padding: 50px 24px; flex: none; }
+  .final-cta-image { padding: 0 16px 24px; width: 100%; }
+  .final-cta-image img { height: 220px; border-radius: 16px; }
+  .final-cta-text h2 { font-size: 24px; }
+}
+/* ─── MOBILE ─── */
+@media (max-width: 1024px) {
+  .testimonials-grid { grid-template-columns: 1fr; }
+  .process-top { flex-direction: column; }
+}
+@media (max-width: 900px) {
+  .services-grid { grid-template-columns: 1fr 1fr; }
+  .blog-grid { grid-template-columns: 1fr 1fr; }
+  .clients-inner { flex-direction: column; }
+  .clients-left { width: 100%; }
+}
+@media (max-width: 768px) {
+  .hero { min-height: 520px; background-attachment: scroll; }
+  .hero-inner { flex-direction: column; padding: 60px 24px 120px; align-items: flex-start; }
+  .hero-text h1 { font-size: 40px; }
+  .hero-typed { font-size: 32px; }
+  .brands-wrap { flex-direction: column; margin: 20px 16px 0; padding: 24px; gap: 20px; }
+  .brands-label { border-right: none; border-bottom: 1px solid #ddd; padding-right: 0; padding-bottom: 16px; min-width: unset; }
+  .services-grid, .blog-grid { grid-template-columns: 1fr; }
+  .services-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+  .services-header h2 { font-size: 28px; }
+  .tech-inner h2, .excellence-inner h2, .process-top h2, .blog-header h2, .results-header h2 { font-size: 30px; }
+  .steps-timeline::before { display: none; }
+  .final-cta-inner { flex-direction: column; }
+  .final-cta-image { width: 100%; }
+  .badges-row img { height: 70px; }
+}
+</style>
+
+<!-- ── S0: HERO ── -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-curve"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1>Custom Software<br/>Development</h1>
+      <div class="hero-typed">For any <span id="typed-el"></span></div>
+      <p>Talk to our experts today about your project. We love a challenge.</p>
+      <a href="/contact-us/" class="btn-orange">Schedule a Consultation</a>
+    </div>
+  </div>
+</section>
+<script is:inline>
+(function() {
+  var s = document.createElement('script');
+  s.src = 'https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js';
+  s.onload = function() {
+    new Typed('#typed-el', {
+      strings: ['business.', 'industry.', 'idea.'],
+      typeSpeed: 100, backSpeed: 50, backDelay: 1500, loop: true
+    });
+  };
+  document.head.appendChild(s);
+})();
+</script>
+
+<!-- ── S2: BRANDS ── -->
+<div class="brands-wrap">
+  <div class="brands-label">Companies that trust<br/>our <a href="https://demskigroup.com/our-clients/">experienced team</a>.</div>
+  <div class="brands-logo-img">
+    <img src="https://demskigroup.com/wp-content/uploads/2024/07/brandlogos.png" alt="Companies: HP, Riot Games, Allstate, Bank of America, Herbalife, Rinnai" />
+  </div>
+</div>
+
+<!-- ── S3: SERVICES ── -->
+<section class="services-section">
+  <div class="services-inner">
+    <div class="services-header">
+      <h2>Code the Future: Innovative Solutions,<br/>Tailored for You</h2>
+      <a href="https://demskigroup.com/services/" class="btn-outline">See all services</a>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <i class="fa-solid fa-code"></i>
+        <h3>Custom Software Development</h3>
+        <p>Develop tailored software solutions to meet your unique business needs and drive operational efficiency.</p>
+      </div>
+      <div class="service-card">
+        <i class="fa-solid fa-layer-group"></i>
+        <h3>UI/UX Design</h3>
+        <p>Create intuitive and engaging user interfaces that provide an exceptional user experience through our UI/UX design services.</p>
+      </div>
+      <div class="service-card">
+        <i class="fa-solid fa-check-circle"></i>
+        <h3>QA and Testing</h3>
+        <p>Ensure your software is reliable, secure, and performs flawlessly under all conditions with our comprehensive QA and testing services.</p>
+      </div>
+      <div class="service-card">
+        <i class="fa-solid fa-headset"></i>
+        <h3>Maintenance and Support</h3>
+        <p>We provide ongoing maintenance and support to keep your software running smoothly and efficiently, promptly addressing any issues.</p>
+      </div>
+      <div class="service-card">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <h3>Mobile Development</h3>
+        <p>Build robust and user-friendly mobile applications for iOS and Android platforms to enhance your business's mobile presence.</p>
+      </div>
+      <div class="service-card">
+        <i class="fa-solid fa-network-wired"></i>
+        <h3>IoT Development</h3>
+        <p>Integrate smart devices and advanced technologies to create connected solutions that transform your business operations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── S5: TECH STACK ── -->
+<!-- ── S5: TECH STACK ── -->
+<section class="tech-section">
+  <div class="tech-curve-top"></div>
+  <div class="tech-inner">
+    <h2>Our Cutting-Edge Tech Stack</h2>
+    <p class="sub">Our team has experience in many programming languages. Take your pick.</p>
+
+    <div class="marquee-wrapper">
+      <!-- Row 1 — left to right -->
+      <div class="marquee-track">
+        {['Java','PHP','iOS','Android','Python','JavaScript','C#','C++','TypeScript','Rust'].concat(
+          ['Java','PHP','iOS','Android','Python','JavaScript','C#','C++','TypeScript','Rust']
+        ).map((t: string) => <span class="tech-tag">{t}</span>)}
+      </div>
+      <!-- Row 2 — right to left -->
+      <div class="marquee-track reverse">
+        {['React','Angular','Ruby','Swift','Kotlin','Node.js','.NET','Go','Vue','Flutter'].concat(
+          ['React','Angular','Ruby','Swift','Kotlin','Node.js','.NET','Go','Vue','Flutter']
+        ).map((t: string) => <span class="tech-tag">{t}</span>)}
+      </div>
+    </div>
+  </div>
+  <div class="tech-see-all">
+    <a href="https://demskigroup.com/technologies/" class="btn-outline-dark">See all capabilities</a>
+  </div>
+
+</section>
+
+<!-- ── S7: CLIENTS / TESTIMONIALS ── -->
+<section class="clients-section">
+  <div class="clients-top">
+    <div class="clients-left">
+      <img
+        src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/two-coworkers-using-ipad-smiling-scaled.jpg"
+        alt="Two coworkers using iPad smiling"
+      />
+    </div>
+    <div class="clients-right">
+      <h2>See the Businesses That<br/>Rely on Our Services</h2>
+      <p>Over 12 years and hundreds of projects later,<br/>we have a lot to talk about.</p>
+      <a href="https://demskigroup.com/our-clients/" class="btn-outline-clients">
+        See our clients <span class="arrow-circle">→</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="testimonial-slider-wrap">
+    <button class="slider-btn slider-btn-prev" id="tslider-prev" aria-label="Previous">←</button>
+
+    <div class="testimonial-slider" id="tslider">
+
+      <div class="testimonial-card-new">
+        <div class="tcard-top">
+          <div class="tcard-quote">❝❝</div>
+          <div class="tcard-logo"><img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/clutch2.png" alt="Biopac" /></div>
+        </div>
+        <p class="tcard-body">We spoke to a few different companies as we set out to find someone to create a website/database application. We chose The Demski Group in part because we found them very easy to talk to. That first impression stuck as we have a great relationship with them now. We are not even considering looking for anyone else.</p>
+        <div class="tcard-footer">
+          <div>
+            <div class="tcard-author">Mickey Rowe</div>
+            <div class="tcard-role">Manager</div>
+          </div>
+          <a href="https://demskigroup.com/our-clients/" class="tcard-case">Read case study →</a>
+        </div>
+      </div>
+
+      <div class="testimonial-card-new">
+        <div class="tcard-top">
+          <div class="tcard-quote">❝❝</div>
+          <div class="tcard-logo-text">TAUSI</div>
+        </div>
+        <p class="tcard-body">I've been working with the Demski team for a while now on building my app, and so far, the experience has been excellent! They are communicative, knowledgeable, and truly dedicated to bringing my vision to life. Their expertise and support have made this process smooth, enjoyable and nothing short of exciting. Highly recommended!</p>
+        <div class="tcard-footer">
+          <div>
+            <div class="tcard-author">Regina DeBellis</div>
+            <div class="tcard-role">Owner</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card-new">
+        <div class="tcard-top">
+          <div class="tcard-quote">❝❝</div>
+          <div class="tcard-logo-text">Zoomifi</div>
+        </div>
+        <p class="tcard-body">My company partnered with The Demski Group for mobile application development, and their work exceeded our expectations. Their professionalism, attention to detail, and quality are unmatched. They provided valuable infrastructure advice, maintained excellent communication, and quickly resolved any issues or bugs. We are confident in their expertise.</p>
+        <div class="tcard-footer">
+          <div>
+            <div class="tcard-author">Timilehin Bashorun</div>
+            <div class="tcard-role">Owner</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card-new">
+        <div class="tcard-top">
+          <div class="tcard-quote">❝❝</div>
+          <div class="tcard-logo-text">Branded</div>
+        </div>
+        <p class="tcard-body">Working with The Demski Group has been an absolute pleasure! They are professional, highly skilled, and incredibly easy to work with. Throughout the development of my mobile app, they are always responsive, helpful, and willing to go the extra mile. I highly recommend them to anyone looking for a reliable and talented development team!</p>
+        <div class="tcard-footer">
+          <div>
+            <div class="tcard-author">Kody Smith</div>
+            <div class="tcard-role">Owner</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card-new">
+        <div class="tcard-top">
+          <div class="tcard-quote">❝❝</div>
+          <div class="tcard-logo-text">Impact Team Tennis</div>
+        </div>
+        <p class="tcard-body">The Demski Group is great to work with! They inherited a mess with our platform and have been able to fix the bugs and make the platform more user friendly. Their professionalism and attention to detail are unmatched.</p>
+        <div class="tcard-footer">
+          <div>
+            <div class="tcard-author">Delaine Mast</div>
+            <div class="tcard-role">CEO</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="slider-btn slider-btn-next" id="tslider-next" aria-label="Next">→</button>
+  </div>
+</section>
+
+<script is:inline>
+  (function () {
+    const slider = document.getElementById('tslider');
+    const btnNext = document.getElementById('tslider-next');
+    const btnPrev = document.getElementById('tslider-prev');
+    if (!slider) return;
+
+    // Clone all cards and append + prepend for infinite illusion
+    const cards = Array.from(slider.querySelectorAll('.testimonial-card-new'));
+    const gap = 16;
+
+    // Append clones at end
+    cards.forEach(card => {
+      const clone = card.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      slider.appendChild(clone);
+    });
+
+    // Prepend clones at start
+    cards.slice().reverse().forEach(card => {
+      const clone = card.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      slider.prepend(clone);
+    });
+
+    function cardWidth() {
+      return slider.querySelector('.testimonial-card-new').offsetWidth + gap;
+    }
+
+    // Start at the first real card (after prepended clones)
+    const jumpToReal = () => {
+      slider.scrollLeft = cardWidth() * cards.length;
+    };
+
+    // No animation on init
+    slider.style.scrollBehavior = 'auto';
+    jumpToReal();
+    setTimeout(() => { slider.style.scrollBehavior = 'smooth'; }, 50);
+
+    function next() {
+      slider.scrollBy({ left: cardWidth(), behavior: 'smooth' });
+      setTimeout(() => {
+        const max = slider.scrollWidth - slider.clientWidth;
+        // If we've scrolled into the appended clones zone, silently jump back
+        if (slider.scrollLeft >= cardWidth() * cards.length * 2) {
+          slider.style.scrollBehavior = 'auto';
+          slider.scrollLeft = cardWidth() * cards.length;
+          setTimeout(() => { slider.style.scrollBehavior = 'smooth'; }, 50);
+        }
+      }, 400);
+    }
+
+    function prev() {
+      slider.scrollBy({ left: -cardWidth(), behavior: 'smooth' });
+      setTimeout(() => {
+        // If we've scrolled into the prepended clones zone, silently jump forward
+        if (slider.scrollLeft <= cardWidth() * (cards.length - 1)) {
+          slider.style.scrollBehavior = 'auto';
+          slider.scrollLeft = cardWidth() * cards.length * 2 - cardWidth();
+          setTimeout(() => { slider.style.scrollBehavior = 'smooth'; }, 50);
+        }
+      }, 400);
+    }
+
+    btnNext && btnNext.addEventListener('click', next);
+    btnPrev && btnPrev.addEventListener('click', prev);
+
+    // Optional: auto-play every 4s
+    let autoplay = setInterval(next, 4000);
+    slider.addEventListener('mouseenter', () => clearInterval(autoplay));
+    slider.addEventListener('mouseleave', () => { autoplay = setInterval(next, 4000); });
+  })();
+  </script>
+
+<!-- ── S8: EXCELLENCE ── -->
+<section class="excellence-section">
+  <div class="excellence-card">
+
+    <div class="excellence-top">
+      <div class="excellence-left">
+        <h2>Excellence | Our<br/>Minimum Standard</h2>
+        <p>We pride ourselves on our unwavering commitment to customer satisfaction.</p>
+        <a href="https://demskigroup.com/our-clients/" class="btn-outline-excellence">
+          See our success <span class="arrow-circle">→</span>
+        </a>
+      </div>
+
+      <div class="excellence-divider"></div>
+
+      <div class="excellence-right">
+        <div class="badge-rotator" id="badge-rotator">
+          <div class="badge-slide active">
+            <img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/clutchcowhite.png" alt="Clutch Top Software Developers 2022" />
+          </div>
+          <div class="badge-slide">
+            <img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/clutch2.png" alt="Clutch Top App Development 2023" />
+          </div>
+          <div class="badge-slide">
+            <img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/clutch3.png" alt="Clutch Top Software Developers 2023" />
+          </div>
+          <div class="badge-slide">
+            <img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/cisppwhite.png" alt="CISSP Certified" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="excellence-bottom">
+      <div class="rating-col">
+        <div class="rating-col-label">5/5 on Clutch</div>
+        <div class="rating-col-stars">★★★★★</div>
+      </div>
+      <div class="rating-col">
+        <div class="rating-col-label">5/5 on Google</div>
+        <div class="rating-col-stars">★★★★★</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<script is:inline>
+  (function () {
+    const slides = document.querySelectorAll('#badge-rotator .badge-slide');
+    if (!slides.length) return;
+    let current = 0;
+    setInterval(() => {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }, 2500);
+  })();
+  </script>
+
+<!-- ── S9: PROCESS ── -->
+<section class="process-section" id="process-section">
+  <div class="process-inner">
+
+    <div class="process-heading">
+      <h2>From Vision to Victory: Our Proven Process</h2>
+      <p>Discover how we turn your ideas into reality with our streamlined, client-focused development process. From initial consultation to final deployment, our expert team ensures every step is meticulously planned and executed to deliver outstanding results.</p>
+    </div>
+
+    <div class="process-body">
+
+      <!-- Left: scroll-driven timeline -->
+      <div class="process-steps" id="process-steps">
+        <div class="process-line-track">
+          <div class="process-line-fill" id="process-line-fill"></div>
+        </div>
+
+        <div class="process-step" data-step="0">
+          <div class="step-dot-wrap">
+            <div class="step-dot"><i class="fa-solid fa-phone"></i></div>
+          </div>
+          <div class="step-content">
+            <div class="step-label">Step 1</div>
+            <div class="step-card">
+              <h4>Have a Conversation</h4>
+              <p>We want to hear your ideas, learn your company's workflow, and offer our software expertise to find a solution to your frustrations while facilitating your growth.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="process-step" data-step="1">
+          <div class="step-dot-wrap">
+            <div class="step-dot"><i class="fa-solid fa-file-lines"></i></div>
+          </div>
+          <div class="step-content">
+            <div class="step-label">Step 2</div>
+            <div class="step-card">
+              <h4>Propose Solution</h4>
+              <p>Post conversation, we will send you a custom proposal with recommended technologies, a rough timeline, and a cost estimate to define the project specifications.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="process-step" data-step="2">
+          <div class="step-dot-wrap">
+            <div class="step-dot"><i class="fa-solid fa-pen-ruler"></i></div>
+          </div>
+          <div class="step-content">
+            <div class="step-label">Step 3</div>
+            <div class="step-card">
+              <h4>Design</h4>
+              <p>Create low-fidelity designs to outline basic structure and functionality, develop high-fidelity designs for detailed visual representation, and build interactive prototypes for user testing and feedback.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="process-step" data-step="3">
+          <div class="step-dot-wrap">
+            <div class="step-dot"><i class="fa-solid fa-code"></i></div>
+          </div>
+          <div class="step-content">
+            <div class="step-label">Step 4</div>
+            <div class="step-card">
+              <h4>Develop, Test, and Deploy</h4>
+              <p>Utilizing agile methodologies, involving iterative development cycles, continuous integration and testing, regular feedback sessions, and seamless deployment practices.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="process-step" data-step="4">
+          <div class="step-dot-wrap">
+            <div class="step-dot"><i class="fa-solid fa-rocket"></i></div>
+          </div>
+          <div class="step-content">
+            <div class="step-label">Step 5</div>
+            <div class="step-card">
+              <h4>Post-Launch</h4>
+              <p>We stand by you and our work. After project completion, we warranty our work to make sure you are satisfied and will remain available for future maintenance & optimizations.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+<!-- Right: sticky CTA only -->
+<div class="process-right">
+  <div class="process-right-actions">
+    <span class="btn-back-arrow">←</span>
+    <a href="/contact-us/" class="btn-orange-process">Get Started Today</a>
+  </div>
+</div>
+
+</div> <!-- end process-body -->
+</div> <!-- end process-inner -->
+
+<!-- Big decorative diamond -->
+<div class="process-deco-card"></div>
+
+</section>
+
+<script is:inline>
+(function () {
+  const stepsContainer = document.getElementById('process-steps');
+  const lineFill = document.getElementById('process-line-fill');
+  const steps = Array.from(document.querySelectorAll('.process-step'));
+  if (!stepsContainer || !lineFill || !steps.length) return;
+
+  function update() {
+    const rect = stepsContainer.getBoundingClientRect();
+    const windowH = window.innerHeight;
+
+    // Fill line based on scroll progress through the container
+    const progress = Math.max(0, Math.min(1,
+      (windowH * 0.65 - rect.top) / rect.height
+    ));
+    lineFill.style.height = (progress * 100) + '%';
+
+    // Activate each step when its midpoint crosses 65% of viewport
+    steps.forEach((step) => {
+      const stepRect = step.getBoundingClientRect();
+      const mid = stepRect.top + stepRect.height / 2;
+      if (mid < windowH * 0.65) {
+        step.classList.add('active');
+      } else {
+        step.classList.remove('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+})();
+</script>
+
+<script is:inline>
+(function () {
+  const stepsContainer = document.getElementById('process-steps');
+  const lineFill = document.getElementById('process-line-fill');
+  const steps = Array.from(document.querySelectorAll('.process-step'));
+  if (!stepsContainer || !lineFill || !steps.length) return;
+
+  function update() {
+    const containerRect = stepsContainer.getBoundingClientRect();
+    const containerTop = containerRect.top;
+    const containerHeight = containerRect.height;
+    const windowH = window.innerHeight;
+
+    // How far we've scrolled into the container (0 → 1)
+    const scrolled = Math.max(0, Math.min(1,
+      (windowH * 0.6 - containerTop) / containerHeight
+    ));
+
+    lineFill.style.height = (scrolled * 100) + '%';
+
+    // Activate steps
+    steps.forEach((step) => {
+      const rect = step.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (mid < windowH * 0.65) {
+        step.classList.add('active');
+      } else {
+        step.classList.remove('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+
+<!-- ── S10+11: BLOG ── -->
+<section class="blog-section">
+  <div class="section-inner">
+    <div class="section-header">
+      <div>
+        <h2>From the Blog</h2>
+      </div>
+      <a href="/blog" class="btn-see-all">See all <span class="arrow-circle">→</span></a>
+    </div>
+
+    <div class="cards-slider-wrap">
+      <button class="cards-nav cards-nav-prev" id="blog-prev" aria-label="Previous">←</button>
+      <div class="cards-slider" id="blog-slider">
+        {posts.map((post: any) => {
+          const img = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+          const date = new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+          return (
+            <a class="post-card" href={`/blog/${post.slug}`}>
+              {img && <img src={img} alt={post.title.rendered} />}
+              <div class="post-card-overlay">
+                <div class="post-card-title">{post.title.rendered}</div>
+                <div class="post-card-bottom">
+                  <span class="post-card-date">{date}</span>
+                  <span class="post-card-read">Read More →</span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+      <button class="cards-nav cards-nav-next" id="blog-next" aria-label="Next">→</button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── S12+13: RESULTS ── -->
+<section class="results-section">
+  <div class="section-inner">
+    <div class="section-header">
+      <div>
+        <h2>Real Results, Real Projects</h2>
+        <p>See how we produced real-world returns for our clients.</p>
+      </div>
+      <a href="https://demskigroup.com/results/" class="btn-see-all">See all <span class="arrow-circle">→</span></a>
+    </div>
+
+    <div class="cards-slider-wrap">
+      <button class="cards-nav cards-nav-prev" id="results-prev" aria-label="Previous">←</button>
+      <div class="cards-slider" id="results-slider">
+        {results.map((post: any) => {
+          const img = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+          const date = new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+          return (
+            <a class="post-card" href={`/results/${post.slug}`}>
+              {img && <img src={img} alt={post.title.rendered} />}
+              <div class="post-card-overlay">
+                <div class="post-card-title">{post.title.rendered}</div>
+                <div class="post-card-bottom">
+                  <span class="post-card-date">{date}</span>
+                  <span class="post-card-read">Read More →</span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+      <button class="cards-nav cards-nav-next" id="results-next" aria-label="Next">→</button>
+    </div>
+  </div>
+</section>
+<!-- ── S14: FINAL CTA ── -->
+<section class="final-cta">
+  <div class="final-cta-inner">
+    <div class="final-cta-text">
+      <h2>
+        <span>Transform Your Vision into Reality:</span>
+        Partner with Our Expert Team Today!
+      </h2>
+      <div>
+        <a href="/contact-us/" class="btn-orange">Schedule a Consultation</a>
+      </div>
+    </div>
+    <div class="final-cta-image">
+      <img
+        src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/cropped-shot-of-a-group-of-creatives-having-a-meet-2023-11-27-04-53-10-utc-1.jpg"
+        alt="Team meeting"
+      />
+    </div>
+  </div>
+</section>
+</Layout>
