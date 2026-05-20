@@ -1375,7 +1375,7 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   }
   .hero-typed { display: none; }
   .hero-text p {
-    font-size: 18px;
+    font-size: 20px;
     max-width: 88%;
     text-align: center;
     color: #282828;
@@ -1384,28 +1384,27 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   }
   .btn-orange {
     font-size: 18px;
-    padding: 16px 28px;
+    padding: 22px 40px;
     border-radius: 50px;
     display: inline-block;
-    max-width: 200px;
-    width: auto;
+    width: 250px;
     text-align: center;
-    margin: 0 auto;
+    margin: 5% auto 0;
   }
 
   /* Brands */
-  .brands-wrap { flex-direction: column; margin: 20px 16px 0; padding: 24px 20px; gap: 20px; border-radius: 12px; }
-  .brands-label { margin-left: 0; border-right: none; border-bottom: 1px solid #ddd; padding-right: 0; padding-bottom: 16px; min-width: unset; font-size: 17px; width: 100%; }
+  .brands-wrap { flex-direction: column; margin: 10vh 16px 0; padding: 24px 20px; gap: 20px; border-radius: 12px; }
+  .brands-label { margin-left: 0; border-right: none; border-bottom: 1px solid #ddd; padding-right: 0; padding-bottom: 16px; min-width: unset; font-size: 21px; width: 100%; text-align: center; }
   .brands-text { transform: none; }
   .brands-logo-img { padding-left: 0; width: 100%; }
 
   /* Services */
   .services-section { padding: 0 0 50px; }
   .services-inner { padding: 0 16px; }
-  .services-header { flex-direction: column; gap: 16px; padding: 50px 0 30px; align-items: center; text-align: center; }
-  .services-header h2 { font-size: 28px; white-space: normal; transform: none; text-align: center; }
+  .services-header { flex-direction: column; gap: 16px; padding: 104px 0 30px; align-items: flex-start; text-align: left; }
+  .services-header h2 { font-size: 35px !important; white-space: normal; transform: none; text-align: left; }
   .svc-btn-desktop { display: none !important; }
-  .svc-btn-mobile { display: inline-flex; margin: 32px auto 0; transform: none; }
+  .svc-btn-mobile { display: inline-flex !important; margin-top: 60px !important; margin-left: auto !important; margin-right: auto !important; transform: none !important; }
   .btn-outline { transform: none; margin-top: 0; font-size: 15px; }
   .services-grid { grid-template-columns: 1fr; gap: 32px; }
   .service-card h3 { font-size: 22px; }
@@ -1413,10 +1412,12 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
 
   /* Tech */
   .tech-section { padding: 60px 0 100px; overflow: hidden; }
-  .tech-inner h2 { font-size: 28px; padding: 0 16px; text-align: center; }
-  .tech-inner .sub { font-size: 15px; padding: 0 16px; }
-  .tech-tag { font-size: 20px; padding: 8px 24px; }
+  .tech-inner { padding: 0 20px; }
+  .tech-inner h2 { font-size: 30px !important; padding: 0; text-align: center; margin-bottom: 12px; }
+  .tech-inner .sub { font-size: 16px; padding: 0; text-align: center; margin-bottom: 40px; }
+  .tech-tag { font-size: 22px; padding: 8px 28px; }
   .marquee-wrapper { overflow: hidden; }
+  .tech-see-all { text-align: center; }
 
   /* Clients */
   .clients-top { flex-direction: column; min-height: auto; }
@@ -1431,9 +1432,11 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   .clients-right p { font-size: 16px; text-align: center; }
   .btn-outline-clients { margin-top: 24px; font-size: 15px; transform: none; }
   .testimonial-slider-wrap { margin-top: 0; padding: 0 0 40px; }
-  .tslider-clip { margin: 0 12px; }
+  .tslider-clip { margin: 0 48px; }
   .testimonial-card-new { flex: 0 0 calc(85vw - 24px); }
-  .slider-btn { display: none; }
+  .slider-btn { display: flex !important; width: 36px; height: 36px; font-size: 14px; }
+  .slider-btn-prev { left: 4px; }
+  .slider-btn-next { right: 4px; }
 
   /* Excellence */
   .excellence-section { padding: 60px 16px 0; }
@@ -1453,7 +1456,7 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   .process-section { padding: 60px 16px 120px; }
   .process-heading { text-align: center; }
   .process-heading { text-align: center; padding: 0 16px; }
-  .process-heading h2 { font-size: 24px !important; text-align: center; line-height: 1.3; margin-bottom: 16px; }
+  .process-heading h2 { font-size: 30px !important; text-align: center; line-height: 1.3; margin-bottom: 16px; }
   .process-heading p { font-size: 16px !important; text-align: center; line-height: 1.7; max-width: 100%; }
   .process-body { flex-direction: column; gap: 30px; }
   .process-right { position: static; width: 100%; }
@@ -1465,7 +1468,7 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
     padding: 16px 36px !important;
     font-size: 18px !important;
     font-weight: 600 !important;
-    transform: translateX(15%) translateY(60%);
+    transform: translateX(17%) translateY(60%);
   }
   .step-card h4 { font-size: 18px; }
   .step-card p { font-size: 15px; }
@@ -1484,6 +1487,8 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   .cards-nav { display: none !important; }
   .blog-section .cards-nav { display: none !important; }
   .results-section .cards-nav { display: none !important; }
+  .results-section .post-card { flex: 0 0 90vw !important; height: 300px !important; }
+  .results-section .cards-slider { flex-direction: row !important; overflow-x: auto !important; }
 
   /* Results */
   .results-section { padding: 0 16px 60px; }
@@ -1491,8 +1496,9 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   /* Final CTA */
   .final-cta-inner { flex-direction: column; min-height: auto; }
   .final-cta-text { flex: none; width: 100%; padding: 40px 20px 36px; }
-  .final-cta-text h2 { font-size: 22px; }
-  .cta-line2 { white-space: normal !important; }
+  .final-cta-text h2 { font-size: 27px !important; }
+  .final-cta-text { overflow: hidden; }
+  .cta-line2 { white-space: normal !important; display: block !important; }
   .final-cta-text h2 span { display: inline; }
   .final-cta-image { width: 100%; overflow: hidden; }
   .final-cta-image img { width: 100%; height: 220px; transform: none; margin-top: 0; border-radius: 20px; object-position: center top; }
@@ -1517,12 +1523,12 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   /* Hero */
   .hero-text h1 { font-size: 50px !important; letter-spacing: -0.4px; }
   .hero-typed { display: none; }
-  .hero-text p { font-size: 14px; }
-  .btn-orange { font-size: 15px; padding: 13px 26px; }
+  .hero-text p { font-size: 20px !important; }
+  .btn-orange { font-size: 18px !important; padding: 22px 40px !important; width: 250px !important; margin: 5% auto 0 !important; }
 
   /* Brands */
-  .brands-wrap { margin: 16px 12px 0; padding: 20px 16px; }
-  .brands-label { font-size: 15px; }
+  .brands-wrap { margin: 10vh 12px 0; padding: 20px 16px; }
+  .brands-label { font-size: 21px !important; text-align: center; }
 
   /* Services */
   .services-header h2 { font-size: 24px; }
@@ -1535,7 +1541,7 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   .clients-right h2 { font-size: 24px; }
 
   /* Process */
-  .process-heading h2 { font-size: 22px !important; }
+  .process-heading h2 { font-size: 28px !important; }
   .step-label { font-size: 12px; }
 
   /* Blog & Results */
@@ -1543,12 +1549,17 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   .section-header h2 { font-size: 22px; }
 
   /* Final CTA */
-  .final-cta-text h2 { font-size: 20px; }
+  .final-cta-text h2 { font-size: 27px !important; }
   .btn-orange { width: 100%; text-align: center; }
 
   /* Footer */
   .footer-col h4 { font-size: 18px; }
   .footer-contact h4 { font-size: 18px; }
+}
+
+/* ─── DESKTOP ONLY: above 1024px ─── */
+@media (min-width: 1025px) {
+  .excellence-section { margin-top: -80px; }
 }
 
 /* ─── REDUCED MOTION: disable/slow heavy animations for accessibility ─── */
@@ -1611,7 +1622,7 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
 <section class="services-section">
   <div class="services-inner">
     <div class="services-header" data-aos="fade-up">
-      <h2>Code the Future: Innovative Solutions,<br />Tailored for You</h2>
+      <h2>Code the Future:<br class="mob-br" /> Innovative Solutions,<br />Tailored for You</h2>
       <a href="/services/" class="btn-outline svc-btn-desktop">See all services <span class="btn-arrow-circle"><i class="fa-solid fa-arrow-right"></i></span></a>
     </div>
     <div class="services-grid">
@@ -1654,8 +1665,8 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
 <section class="tech-section">
   <div class="tech-curve-top"></div>
   <div class="tech-inner">
-    <h2>Our Cutting-Edge Tech Stack</h2>
-    <p class="sub">Our team has experience in many programming languages. Take your pick.</p>
+    <h2>Our Cutting-Edge Tech<br class="mob-br" /> Stack</h2>
+    <p class="sub">Our team has experience in many <br class="mob-br" /> programming languages. Take your pick.</p>
 
     <div class="marquee-wrapper">
       <!-- Row 1 — left to right -->
