@@ -31,13 +31,13 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
       .site-header-wrap {
         position: sticky;
         top: 0;
-        z-index: 500;
+        z-index: 9999;
         background: #ffffff;
       }
 
       /* ─── TOP BAR ─── */
       .top-bar { background: #0154b1; color: white; font-size: 20px; padding: 8px 30px; text-align: center; }
-      .top-bar a { color: white; font-weight: 700; text-decoration: underline; }
+      .top-bar a { color: white; font-weight: 400; text-decoration: underline !important; }
 
       /* ─── HEADER ─── */
       header { background: white; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.10); position: relative; z-index: 10; }
@@ -49,7 +49,7 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
       .nav-dropdown { position: relative; }
       .nav-trigger { background: none; border: 0; padding: 0; font: inherit; font-size: 18px; color: #222; font-weight: 500; cursor: pointer; }
       /* dropdown must escape header's z-index context: use large value relative to wrapper */
-      .nav-dropdown-menu { position: absolute; top: calc(100% + 18px); left: 50%; transform: translateX(-50%); width: 374px; background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,0.14); display: none; z-index: 9999; border: 1px solid #ececec; }
+      .nav-dropdown-menu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 374px; background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,0.14); display: none; z-index: 9999; border: 1px solid #ececec; padding-top: 18px; margin-top: 0; }
       .nav-dropdown:hover .nav-dropdown-menu,
       .nav-dropdown:focus-within .nav-dropdown-menu { display: block; }
       .nav-dropdown-menu a { display: block; padding: 16px 20px; border-bottom: 1px solid #e6e6e6; font-size: 18px; color: #333; background: #fff; }
@@ -64,27 +64,73 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
       a:focus-visible, button:focus-visible { outline: 2px solid #0154b1; outline-offset: 3px; border-radius: 3px; }
 
       /* ─── HAMBURGER / MOBILE MENU ─── */
-      .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; background: none; border: none; padding: 5px; }
-      .hamburger span { display: block; width: 25px; height: 2px; background: #222; border-radius: 2px; transition: all 0.3s ease; }
-      .mobile-menu { display: none; flex-direction: column; background: white; padding: 20px; gap: 15px; border-top: 1px solid #eee; }
-      .mobile-menu a { font-size: 18px; color: #222; text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-      .mobile-menu a:last-child { border-bottom: none; }
+      .hamburger { display: none; flex-direction: column; justify-content: center; align-items: flex-end; cursor: pointer; gap: 7px; background: none; border: none; padding: 6px; width: 44px; height: 44px; }
+      .hamburger span { display: block; width: 30px; height: 2.5px; background: #222222; border-radius: 50px; transition: all 0.3s ease; }
+      .hamburger span:nth-child(2) { width: 22px; }
+      .hamburger.open span:nth-child(1) { transform: translateY(10.5px) rotate(45deg); width: 30px; }
+      .hamburger.open span:nth-child(2) { opacity: 0; }
+      .hamburger.open span:nth-child(3) { transform: translateY(-10.5px) rotate(-45deg); width: 30px; }
+      /* Mobile menu — right-side drawer */
+      .mobile-menu {
+        display: none;
+        flex-direction: column;
+        position: fixed;
+        top: 0; right: 0;
+        width: 72vw;
+        max-width: 320px;
+        height: 100vh;
+        background: #ffffff;
+        padding: 20px 24px 40px;
+        gap: 0;
+        z-index: 9999;
+        box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        align-items: flex-end;
+      }
       .mobile-menu.open { display: flex; }
+      /* Close × button */
+      .mobile-close-btn {
+        background: none; border: 1.5px solid #bbb; border-radius: 4px;
+        width: 28px; height: 28px; font-size: 16px; line-height: 1;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        color: #555; margin-bottom: 16px; align-self: flex-end;
+      }
+      .mobile-menu a {
+        font-size: 22px; color: #1a1a1a; text-decoration: underline;
+        font-weight: 600; padding: 22px 0; border-bottom: 1px solid #f0f0f0;
+        display: block; text-align: right; width: 100%;
+      }
+      .mobile-menu a:last-child { border-bottom: none; }
+      /* Hide Schedule a Consultation from drawer */
+      .mobile-menu a[href="/contact-us/"] { display: none !important; }
 
       /* Mobile Solutions dropdown */
       .mobile-dropdown { width: 100%; border-bottom: 1px solid #f0f0f0; }
-      .mobile-dropdown-btn { width: 100%; background: none; border: none; padding: 8px 0; font-size: 18px; font-weight: 500; color: #222; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-family: inherit; }
-      .mobile-drop-arrow { font-size: 14px; transition: transform 0.25s ease; }
-      .mobile-dropdown.open .mobile-drop-arrow { transform: rotate(180deg); }
-      .mobile-dropdown-items { display: none; flex-direction: column; padding: 4px 0 8px 12px; gap: 2px; }
+      .mobile-dropdown-btn {
+        width: 100%; background: none; border: none; padding: 22px 0;
+        font-size: 22px; font-weight: 600; color: #1a1a1a;
+        display: flex; justify-content: flex-end; align-items: center; gap: 8px;
+        cursor: pointer; font-family: inherit; text-decoration: underline;
+        text-align: right;
+      }
+      .mobile-drop-arrow { font-size: 16px; font-style: normal; font-weight: 400; transition: none; }
+      .mobile-dropdown.open .mobile-drop-arrow::before { content: '−'; }
+      .mobile-drop-arrow::before { content: '+'; }
+      .mobile-dropdown-items { display: none; flex-direction: column; padding: 0; gap: 0; align-items: stretch; }
       .mobile-dropdown.open .mobile-dropdown-items { display: flex; }
-      .mobile-dropdown-items a { font-size: 15px; color: #444; border-bottom: none; padding: 7px 0; border-bottom: 1px solid #f5f5f5; }
+      .mobile-dropdown-items a {
+        font-size: 20px; color: #282828; text-decoration: none;
+        padding: 20px 16px; border-bottom: 1px solid #f0f0f0;
+        font-weight: 400; text-align: left; width: 100%;
+        font-family: 'Outfit', sans-serif;
+      }
+      .mobile-dropdown-items a:hover { color: #0154b1; }
 
       /* ─── FOOTER ─── */
       footer { background: #ffffff; color: #282828; padding: 0; margin-top: 60px; }
       .footer-inner { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0; align-items: stretch; }
       .footer-logo { padding: 50px 40px; background: #ffffff; }
-      .footer-logo img { height: 80px; width: auto; }
+      .footer-logo img { height: 128px; width: auto; margin-left: 15%; }
       .footer-col { padding: 50px 40px; background: #ffffff; }
       .footer-col h4 { font-size: 35px; font-weight: 600; margin-bottom: 16px; color: #282828; }
       .footer-col a { display: block; font-size: 18px; color: #282828; text-decoration: none; margin-bottom: 20px; }
@@ -92,8 +138,9 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
       .footer-contact { background: #ebebeb !important; padding: 50px 40px; }
       .footer-contact h4 { font-size: 35px; font-weight: 600; margin-bottom: 16px; color: #0A0000; }
       .footer-contact p { font-size: 18px; color: #000000; line-height: 1.5; margin-bottom: 20px; }
-      .footer-cta-btn { display: inline-block; background: #f09300; color: white !important; padding: 12px 22px; border-radius: 4px; font-weight: 500; font-size: 20px !important; margin-bottom: 18px; text-decoration: none !important; width: fit-content !important; }
-      .footer-cta-btn:hover { background: #d98200 !important; }
+      .footer-cta-btn { display: inline-block; background: #f09300; color: white !important; padding: 12px 22px; border-radius: 12px; font-weight: 500; font-size: 20px !important; margin-bottom: 18px; text-decoration: none !important; width: fit-content !important; transition: all 0.3s ease; border: 1.5px solid #f09300; }
+      .footer-cta-btn:hover { background: #ffffff !important; color: #282828 !important; border: 1.5px solid #282828; }
+      .scroll-cta-btn:hover { background: #ffffff !important; color: #282828 !important; border-color: #282828 !important; }
       .footer-bottom { border-top: 1px solid #ddd; padding: 16px 80px; font-size: 18px; color: #888; text-align: center; background: #ffffff; }
       .social-row { display: flex; gap: 8px; margin-top: 10px; }
       .social-row a { width: 50px; height: 50px; background: #1a1a1a; border-radius: 17%; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; font-weight: 500; text-decoration: none !important; transition: background 0.3s ease; }
@@ -149,7 +196,7 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
 
       <!-- TOP BAR -->
       <div class="top-bar">
-        Questions? We're On Standby – Give Us a Call <a href="tel:406-868-1034">406-868-1034</a>
+        Questions? We're On Standby – Give Us A Call <a href="tel:406-936-3049">406-936-3049</a>
       </div>
 
       <!-- HEADER -->
@@ -191,10 +238,11 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
 
       <!-- MOBILE MENU (inside wrapper so it expands the sticky unit) -->
       <div class="mobile-menu" id="mobileMenu">
+        <button class="mobile-close-btn" id="mobileClose" aria-label="Close menu">×</button>
         <!-- Solutions with expandable sub-menu -->
         <div class="mobile-dropdown">
           <button class="mobile-dropdown-btn" id="mobileDropBtn" type="button">
-            Solutions <span class="mobile-drop-arrow">▾</span>
+            Solutions <span class="mobile-drop-arrow"></span>
           </button>
           <div class="mobile-dropdown-items" id="mobileDropItems">
             <a href="/services/">Software Development Services</a>
@@ -254,7 +302,8 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
           <p>The Demski Group<br />237 Delaware Ave #7<br />Olean, NY 14760<br />716-670-4514</p>
           <p>250 East 5th Street 15th floor<br />Cincinnati, OH 45202<br />513-562-150</p>
           <p>1001 S. Main St. #8131<br />Kalispell, MT 59901<br />406-540-5604</p>
-          <h4 style="font-size:20px;margin-top:16px;margin-bottom:10px;">Follow Us</h4>
+          <p><a href="mailto:contact@demskigroup.com" style="color:#000000;text-decoration:none;">contact@demskigroup.com</a></p>
+          <h4 style="font-size:32px;margin-top:16px;margin-bottom:10px;">Follow Us</h4>
           <div class="social-row">
             <a href="https://www.facebook.com/demskigroup/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
             <a href="https://x.com/demskigroup" target="_blank" aria-label="X"><i class="fab fa-x-twitter"></i></a>
@@ -273,6 +322,15 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
       if (hamburger && mobileMenu) {
         hamburger.addEventListener('click', () => {
           mobileMenu.classList.toggle('open');
+          hamburger.classList.toggle('open');
+        });
+      }
+
+      const mobileClose = document.getElementById('mobileClose');
+      if (mobileClose) {
+        mobileClose.addEventListener('click', () => {
+          mobileMenu?.classList.remove('open');
+          hamburger?.classList.remove('open');
         });
       }
 
@@ -282,6 +340,51 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
           mobileDropBtn.closest('.mobile-dropdown')?.classList.toggle('open');
         });
       }
+    </script>
+
+    <!-- Scroll-triggered sticky bar (desktop only, appears after 5% scroll) -->
+    <div id="scrollStickyBar" style="
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
+      transform: translateY(-100%); transition: transform 0.35s ease;
+    ">
+      <!-- Top bar -->
+      <div style="background:#0154b1;color:white;font-size:20px;padding:8px 30px;text-align:center;font-family:'Outfit',sans-serif;">
+        Questions? We're On Standby – Give Us A Call <a href="tel:406-936-3049" style="color:white;text-decoration:underline !important;font-weight:400;">406-936-3049</a>
+      </div>
+      <!-- Logo + Button row -->
+      <div style="
+        background:#ffffff; padding:12px 50px;
+        display:flex; justify-content:space-between; align-items:center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      ">
+        <a href="/"><img src="/Logo3-768x137.webp" alt="Demski Group" style="height:42px;width:auto;" /></a>
+        <a href="/contact-us/" class="scroll-cta-btn" style="
+          background:#f09300;color:#fff;border:1px solid #f09300;
+          padding:10px 20px;border-radius:6px;font-size:16px;font-weight:600;
+          text-decoration:none;white-space:nowrap;transition:all 0.3s ease;
+          font-family:'Outfit',sans-serif;
+        ">Schedule a Consultation</a>
+      </div>
+    </div>
+
+    <script>
+      (function(){
+        var bar = document.getElementById('scrollStickyBar');
+        if (!bar) return;
+        var shown = false;
+        window.addEventListener('scroll', function(){
+          var pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+          if (!shown && pct >= 0.05) {
+            bar.style.transform = 'translateY(0)';
+            shown = true;
+          } else if (shown && pct < 0.05) {
+            bar.style.transform = 'translateY(-100%)';
+            shown = false;
+          }
+        }, { passive: true });
+        // Hide on mobile
+        if (window.innerWidth <= 768) bar.style.display = 'none';
+      })();
     </script>
 
   </body>
