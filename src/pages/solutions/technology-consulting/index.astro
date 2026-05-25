@@ -32,17 +32,59 @@ const contactTestimonials = [
   { quote: "Code quality was very good and done in a fast, efficient manner. We are pleased with the excellent job from The Demski Group. The team was able to provide high-quality services throughout the project. They produced the deliverables in a timely manner and within budget.", name: "Thariq Kara", role: "CEO", link: "/our-clients/nu-borders/" }
 ];
 
-const cases = [
-  { tag: 'Biotechnology', name: 'BIOPAC Systems, Inc.', description: 'The Demski Group successfully delivered a scalable and efficient web application for Biopac, enabling users to perform and track scientific studies online.', image: 'Biopac-white.png', tone: 'dark', link: '/our-clients/biopac' },
-  { tag: 'Sports', name: 'Impact Team Tennis', description: '', image: 'ImpactTennis-e1744403805766.png', tone: 'green', link: '/our-clients/impact-team-tennis/' },
-  { tag: 'Health & Wellness', name: 'Prefusion Health', description: '', image: 'PrefusionHealth.png', tone: 'purple', link: '/our-clients/prefusion-health/' },
-  { tag: 'Insurance', name: 'Adaptrack', description: '', image: 'ADAPTRACK.png', tone: 'rose', link: '/our-clients/' },
-  { tag: 'Retail', name: 'Zoomifi', description: '', image: 'Zoomifi-2-e1744403389524.png', tone: 'pink', link: '/our-clients/zoomifi/' },
-  { tag: 'Real Estate', name: 'Property Gauge', description: '', image: 'PropertyGauge.png', tone: 'sky', link: '/our-clients/property-gauge/' },
-  { tag: 'Energy & Utilities', name: 'Corning', description: '', image: 'Corning-e1744401647484.png', tone: 'yellow', link: '/our-clients/corning-glass/' },
-  { tag: 'Logistics', name: 'Bite', description: '', image: 'Bite-e1746208787498.png', tone: 'violet', link: '/our-clients/bite/' },
-  { tag: 'Manufacturing', name: 'Saputo', description: '', image: 'Saputo.png', tone: 'sand', link: '/our-clients/' }
+const CASE_TONES = ['dark', 'green', 'purple', 'rose', 'pink', 'sky', 'yellow', 'violet', 'sand'];
+
+function cleanHtml(str) {
+  return (str || '').replace(/&amp;/g,'&').replace(/&#8217;/g,"'")
+    .replace(/&#8216;/g,"'").replace(/&#8230;/g,'…').replace(/<[^>]*>/g,'').trim();
+}
+function normalizeClientLink(link, slug) {
+  return (link || '')
+    .replace('https://demskigrdev.wpenginepowered.com','')
+    .replace('https://demskigroup.com','')
+    || `/our-clients/${slug}/`;
+}
+
+const WP_CLIENT_URLS = [
+  'https://demskigroup.com/wp-json/wp/v2/our-clients',
+  'https://demskigrdev.wpenginepowered.com/wp-json/wp/v2/our-clients',
 ];
+
+let cases: Array<{ tag: string; name: string; description: string; image: string; tone: string; link: string }> = [];
+
+for (const base of WP_CLIENT_URLS) {
+  try {
+    const res = await fetch(`${base}?_embed&per_page=100&orderby=menu_order&order=asc`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) continue;
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) continue;
+    cases = data.map((item: any, i: number) => ({
+      tag:         cleanHtml(item._embedded?.['wp:term']?.[0]?.[0]?.name || ''),
+      name:        cleanHtml(item.title?.rendered),
+      description: cleanHtml(item.excerpt?.rendered).replace(/\[…\]/g,'').replace(/\[&hellip;\]/g,''),
+      image:       item._embedded?.['wp:featuredmedia']?.[0]?.source_url || '',
+      tone:        CASE_TONES[i % CASE_TONES.length],
+      link:        normalizeClientLink(item.link, item.slug),
+    }));
+    break;
+  } catch(_) { continue; }
+}
+
+if (!cases.length) {
+  cases = [
+    { tag: 'Biotechnology', name: 'BIOPAC Systems, Inc.', description: 'The Demski Group successfully delivered a scalable and efficient web application for Biopac, enabling users to perform and track scientific studies online.', image: '/solutions/sales-lead-tracking-tools/Biopac-white.png', tone: 'dark', link: '/our-clients/biopac/' },
+    { tag: 'Sports', name: 'Impact Team Tennis', description: '', image: '/solutions/sales-lead-tracking-tools/ImpactTennis-e1744403805766.png', tone: 'green', link: '/our-clients/impact-team-tennis/' },
+    { tag: 'Health & Wellness', name: 'Prefusion Health', description: '', image: '/solutions/sales-lead-tracking-tools/PrefusionHealth.png', tone: 'purple', link: '/our-clients/prefusion-health/' },
+    { tag: 'Insurance', name: 'Adaptrack', description: '', image: '/solutions/sales-lead-tracking-tools/ADAPTRACK.png', tone: 'rose', link: '/our-clients/' },
+    { tag: 'Retail', name: 'Zoomifi', description: '', image: '/solutions/sales-lead-tracking-tools/Zoomifi-2-e1744403389524.png', tone: 'pink', link: '/our-clients/zoomifi/' },
+    { tag: 'Real Estate', name: 'Property Gauge', description: '', image: '/solutions/sales-lead-tracking-tools/PropertyGauge.png', tone: 'sky', link: '/our-clients/property-gauge/' },
+    { tag: 'Energy & Utilities', name: 'Corning', description: '', image: '/solutions/sales-lead-tracking-tools/Corning-e1744401647484.png', tone: 'yellow', link: '/our-clients/corning-glass/' },
+    { tag: 'Logistics', name: 'Bite', description: '', image: '/solutions/sales-lead-tracking-tools/Bite-e1746208787498.png', tone: 'violet', link: '/our-clients/bite/' },
+    { tag: 'Manufacturing', name: 'Saputo', description: '', image: '/solutions/sales-lead-tracking-tools/Saputo.png', tone: 'sand', link: '/our-clients/' },
+  ];
+}
 ---
 
 <Layout
@@ -1158,7 +1200,7 @@ const cases = [
         {cases.map(({ tag, name, description, image, tone, link }) => (
           <article class={`case-card ${tone === 'dark' ? 'featured' : tone}`}>
             <span class="case-tag">{tag}</span>
-            <img src={`/solutions/sales-lead-tracking-tools/${image}`} alt={`${name} logo`} width="300" height="92" loading="lazy" />
+            {image && <img src={image} alt={`${name} logo`} width="300" height="92" loading="lazy" />}
             {description && <p>{description}</p>}
             <a class="case-link" href={link}>Read full case study →</a>
           </article>
