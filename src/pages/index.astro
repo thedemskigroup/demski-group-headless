@@ -479,11 +479,11 @@ html, body { overflow-x: hidden; }
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
-  box-shadow: none;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.10), 0 0 2px rgba(0,0,0,0.06);
   transition: box-shadow 0.25s ease;
 }
 .testimonial-card-new:hover {
-  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 9px rgba(0,0,0,0.16), 0 0 3px rgba(0,0,0,0.09);
 }
 .tcard-top {
   display: flex;
@@ -503,7 +503,7 @@ html, body { overflow-x: hidden; }
   height: 35px;
   width: auto;
   object-fit: contain;
-  max-width: 210px;
+  max-width: 120px;
 }
 .tcard-logo-text {
   font-size: 13px;
@@ -516,9 +516,9 @@ html, body { overflow-x: hidden; }
   max-width: 150px;
 }
 .tcard-body {
-  font-size: 14px;
-  color: #0A0000;
-  line-height: 1.7;
+  font-size: 16px;
+  color: #333;
+  line-height: 1.72;
   flex: 1;
   margin-bottom: 18px;
 }
@@ -528,19 +528,19 @@ html, body { overflow-x: hidden; }
   align-items: flex-end;
   margin-top: auto;
   padding-top: 14px;
+  border-top: 1px solid #e8e8e8;
 }
-.tcard-author { font-size: 16px; font-weight: 400; color: rgba(40,40,40,0.56); margin-bottom: 2px; }
-.tcard-role { font-size: 16px; color: rgba(40,40,40,0.56); line-height: 1.4; }
+.tcard-author { font-size: 14px; font-weight: 700; color: #1a1a1a; line-height: 1.4; margin-bottom: 2px; }
+.tcard-role { font-size: 13px; font-weight: 400; color: #888; line-height: 1.4; }
 .tcard-case {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   color: #1a1a1a;
   text-decoration: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  white-space: normal;
-  max-width: 80px;
+  gap: 4px;
+  white-space: nowrap;
   line-height: 1.3;
   transition: transform 0.25s ease, color 0.25s ease;
 }
@@ -1609,12 +1609,12 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
 
   .testimonial-card-new {
     border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: none;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.10), 0 0 2px rgba(0,0,0,0.06);
     transition: box-shadow 0.25s ease;
   }
 
   .testimonial-card-new:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 9px rgba(0,0,0,0.16), 0 0 3px rgba(0,0,0,0.09);
     transform: none;
   }
 }
