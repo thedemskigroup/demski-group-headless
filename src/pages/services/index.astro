@@ -1087,9 +1087,15 @@ h1, h2, h3, h4, h5, h6 {
     margin: 5% auto 0;
   }
 
-  /* POS card — stop overlap with rating box */
+  /* POS card — stack vertically, stop overlap with rating box */
   .svc-pos { padding-top: 40px; }
-  .svc-pos-inner { margin-top: 0; }
+  .svc-pos-inner {
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 0;
+  }
+  .svc-pos-img { width: 100%; min-width: 0; height: 220px; }
+  .svc-pos-content { padding: 28px 24px 8px; }
   .svc-pos-btn { padding: 0 24px 32px; }
   .svc-pos-btn .btn-orange {
     width: 100%;

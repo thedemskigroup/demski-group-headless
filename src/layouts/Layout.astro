@@ -501,8 +501,8 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
           if (!mobileMenu) return;
           // Hide the sticky bar FIRST so its hamburger animation doesn't bleed through the drawer
           bar.style.visibility = 'hidden';
-          // Drawer lives inside header wrap — restore opacity so it can render
-          if (header) header.style.opacity = '1';
+          // Drawer lives inside header wrap — restore opacity AND pointer events so clicks reach the menu
+          if (header) { header.style.opacity = '1'; header.style.pointerEvents = ''; }
           mobileMenu.classList.add('open');
           hamScroll && hamScroll.classList.add('open');
           hamMain && hamMain.classList.add('open');
@@ -515,10 +515,10 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
           // Restore sticky bar / header state based on current scroll
           if (shown) {
             bar.style.visibility = 'visible';
-            if (header) header.style.opacity = '0';
+            if (header) { header.style.opacity = '0'; header.style.pointerEvents = 'none'; }
           } else {
             bar.style.visibility = 'visible';
-            if (header) header.style.opacity = '1';
+            if (header) { header.style.opacity = '1'; header.style.pointerEvents = ''; }
           }
         }
         function toggleMenu() {
