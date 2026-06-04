@@ -1514,18 +1514,47 @@ h1, h2, h3, h4, h5, h6 {
     </a>`;
   }
 
-  const clients = await fetchClients();
-  if (!clients.length) {
-    // API unavailable — clear skeleton placeholders so users don't see endless loaders
-    const bSec = document.getElementById('svc-biopac-section');
-    const gSec = document.getElementById('svc-clients-grid');
-    if (bSec) bSec.style.display = 'none';
-    if (gSec) gSec.style.display = 'none';
-    return;
-  }
+  const KNOWN_LOGOS = {
+    'biopac':'https://demskigroup.com/wp-content/uploads/2024/07/Biopac.png',
+    'shop-orthopedics':'https://demskigroup.com/wp-content/uploads/2024/06/ShopOrthopedics-1.png',
+    'property-gauge':'https://demskigroup.com/wp-content/uploads/2024/07/PropertyGauge.png',
+    'mister-quik':'https://demskigroup.com/wp-content/uploads/2024/07/mrquick.png',
+    'pnc-bank':'https://demskigroup.com/wp-content/uploads/2024/06/company-logo-4.png',
+    'jackson-hewitt':'https://demskigroup.com/wp-content/uploads/2024/06/jacksonhewitt-1.png',
+    'zoomifi':'https://demskigroup.com/wp-content/uploads/2024/06/Zoomifi-1.png',
+    'corning-glass':'https://demskigroup.com/wp-content/uploads/2024/07/corning-300x201-1.png',
+    'flower-moxie-case-study':'https://demskigroup.com/wp-content/uploads/2024/07/Flowermoxie.png',
+    'golf-daddy':'https://demskigroup.com/wp-content/uploads/2024/07/Branded-300x159.png',
+    'audiojack':'https://demskigroup.com/wp-content/uploads/2024/06/audiojackhighres-300x159.png',
+    'willo':'https://demskigroup.com/wp-content/uploads/2024/07/Willo-1.png',
+    'impact-team-tennis':'https://demskigroup.com/wp-content/uploads/2025/02/ITTLogo-300x159.png',
+    'bite':'https://demskigroup.com/wp-content/uploads/2024/08/newbitelogo.png',
+    'hewlett-packard-enterprise':'https://demskigroup.com/wp-content/uploads/2024/07/HP-1.png',
+    'farmers-daughter-fibers':'https://demskigroup.com/wp-content/uploads/2024/07/FarmersDaughter.png',
+    'tausi-brands':'https://demskigroup.com/wp-content/uploads/2024/06/Tausi-1.png',
+    'nu-borders':'https://demskigroup.com/wp-content/uploads/2024/07/Nuborders.png',
+  };
+  const FALLBACK_CLIENTS = [
+    {slug:'biopac',name:'Biopac',link:'/our-clients/biopac/',logo:KNOWN_LOGOS['biopac'],desc:'The Demski Group successfully delivered a scalable and efficient web application for Biopac, enabling users to perform and track scientific studies online.'},
+    {slug:'shop-orthopedics',name:'Shop Orthopedics',link:'/our-clients/shop-orthopedics/',logo:KNOWN_LOGOS['shop-orthopedics'],desc:''},
+    {slug:'property-gauge',name:'Property Gauge',link:'/our-clients/property-gauge/',logo:KNOWN_LOGOS['property-gauge'],desc:''},
+    {slug:'mister-quik',name:'Mister Quik',link:'/our-clients/mister-quik/',logo:KNOWN_LOGOS['mister-quik'],desc:''},
+    {slug:'pnc-bank',name:'PNC Bank',link:'/our-clients/pnc-bank/',logo:KNOWN_LOGOS['pnc-bank'],desc:''},
+    {slug:'jackson-hewitt',name:'Jackson Hewitt',link:'/our-clients/jackson-hewitt/',logo:KNOWN_LOGOS['jackson-hewitt'],desc:''},
+    {slug:'zoomifi',name:'Zoomifi',link:'/our-clients/zoomifi/',logo:KNOWN_LOGOS['zoomifi'],desc:''},
+    {slug:'corning-glass',name:'Corning Glass',link:'/our-clients/corning-glass/',logo:KNOWN_LOGOS['corning-glass'],desc:''},
+    {slug:'flower-moxie-case-study',name:'Flower Moxie',link:'/our-clients/flower-moxie-case-study/',logo:KNOWN_LOGOS['flower-moxie-case-study'],desc:''},
+    {slug:'willo',name:'Willo',link:'/our-clients/willo/',logo:KNOWN_LOGOS['willo'],desc:''},
+    {slug:'impact-team-tennis',name:'Impact Team Tennis',link:'/our-clients/impact-team-tennis/',logo:KNOWN_LOGOS['impact-team-tennis'],desc:''},
+    {slug:'bite',name:'Bite',link:'/our-clients/bite/',logo:KNOWN_LOGOS['bite'],desc:''},
+    {slug:'tausi-brands',name:'Tausi Brands',link:'/our-clients/tausi-brands/',logo:KNOWN_LOGOS['tausi-brands'],desc:''},
+  ];
 
-  const biopac = clients.find(c => c.slug?.includes('biopac')) || clients[0];
-  const others = clients.filter(c => c.id !== biopac?.id);
+  const clients = (await fetchClients()).map(c => ({ ...c, logo: c.logo || KNOWN_LOGOS[c.slug] || '' }));
+  const displayClients = clients.length ? clients : FALLBACK_CLIENTS;
+
+  const biopac = displayClients.find(c => c.slug?.includes('biopac')) || displayClients[0];
+  const others = displayClients.filter(c => c.slug !== biopac?.slug);
   const topFour = others.slice(0, 4);
   const rest = others.slice(4);
 
@@ -1550,6 +1579,8 @@ h1, h2, h3, h4, h5, h6 {
 
   const grid = document.getElementById('svc-clients-grid');
   if (grid) grid.innerHTML = rest.slice(0, 8).map(c => clientCard(c)).join('');
+  // ensure skeletons are always replaced
+  document.querySelectorAll('#svc-biopac-section .skeleton, #svc-clients-grid .skeleton').forEach(el => el.remove());
 })();
 
 /* Testimonial carousel */
