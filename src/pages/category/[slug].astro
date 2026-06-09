@@ -1,0 +1,237 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const { slug } = Astro.params;
+const page = Number(Astro.url.searchParams.get('page') || 1);
+const perPage = 10;
+
+// Get category info
+const catRes = await fetch(`https://demskigroup.com/wp-json/wp/v2/categories?slug=${slug}`);
+const cats = await catRes.json();
+const category = cats[0];
+
+if (!category) return Astro.redirect('/blog');
+
+// Get posts for this category
+const postsRes = await fetch(`https://demskigroup.com/wp-json/wp/v2/posts?_embed&categories=${category.id}&per_page=${perPage}&page=${page}`);
+const posts = await postsRes.json();
+const totalPages = Number(postsRes.headers.get('X-WP-TotalPages') || 1);
+
+// Sidebar data
+const allCatRes = await fetch('https://demskigroup.com/wp-json/wp/v2/categories?per_page=20&hide_empty=true');
+const allCategories = await allCatRes.json();
+
+const tagRes = await fetch('https://demskigroup.com/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc');
+const tags = await tagRes.json();
+
+const recentRes = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=5');
+const recentPosts = await recentRes.json();
+---
+
+<Layout title={`${category.name} - The Demski Group Blog`} description={`Browse all posts in the ${category.name} category.`}>
+  <style slot="head">
+    .cat-page { font-family: 'Outfit', sans-serif; color: #282828; }
+
+    /* Hero */
+    .cat-hero { text-align: center; padding: 80px 20px 50px; background: #faf9f5; }
+    .cat-hero h1 { font-size: clamp(32px, 4vw, 56px); font-weight: 800; color: #0A0000; margin: 0 auto 16px; }
+    .cat-breadcrumb { font-size: 14px; color: #888; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .cat-breadcrumb a { color: #888; text-decoration: none; }
+    .cat-breadcrumb a:hover { color: #003087; }
+
+    /* Layout */
+    .cat-wrap { max-width: 1280px; margin: 0 auto; padding: 50px 60px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 60px; align-items: flex-start; }
+
+    /* Posts column */
+    .cat-posts { min-width: 0; }
+
+    /* Post card */
+    .post-card { background: white; margin-bottom: 30px; overflow: hidden; border: 1px solid #ebebeb; border-radius: 12px; }
+    .post-card img { width: 100%; height: 450px; object-fit: cover; display: block; transition: transform 0.3s ease; }
+    .post-card:hover img { transform: scale(1.02); }
+    .post-info { padding: 24px 26px 26px; }
+    .post-meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+    .post-date-txt { font-size: 15px; color: #888; display: flex; align-items: center; gap: 5px; font-family: 'Outfit', sans-serif; }
+    .post-cat-tag { border: 1px solid #ccc; color: #555; padding: 2px 12px; border-radius: 20px; font-size: 14px; text-decoration: none; transition: all 0.2s; }
+    .post-cat-tag:hover { background: #003087; color: white; border-color: #003087; }
+    .post-card h2 { font-size: 26px; font-weight: 700; margin-bottom: 14px; line-height: 1.35; }
+    .post-card h2 a { color: #0A0000; text-decoration: none; transition: color 0.2s; }
+    .post-card h2 a:hover { color: #003087; }
+    .post-excerpt { font-size: 16px; color: #555; line-height: 1.65; margin-bottom: 18px; }
+    .read-more-link { display: inline-flex; align-items: center; gap: 7px; font-size: 16px; color: #003087; font-weight: 600; text-decoration: none; }
+    .read-more-link:hover { color: #0154b1; }
+
+    /* Pagination */
+    .pagination { display: flex; justify-content: flex-start; align-items: center; gap: 10px; margin: 40px 0 0; flex-wrap: wrap; }
+    .pagination a, .pagination span { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; font-size: 16px; font-weight: 600; text-decoration: none; color: #333; background: white; border: 1.5px solid #ddd; transition: all 0.2s; }
+    .pagination a:hover { background: #0A0000; color: white; border-color: #0A0000; }
+    .pagination span.active { background: #0A0000; color: white; border-color: #0A0000; }
+    .pagination .dots { border: none; background: none; color: #888; width: auto; font-size: 18px; }
+
+    /* Sidebar */
+    .cat-sidebar { position: sticky; top: 100px; }
+    .sb-box { background: #faf9f5; border: 1px solid #ebebeb; border-radius: 8px; padding: 22px; margin-bottom: 24px; }
+    .sb-box h3 { font-size: 17px; font-weight: 700; color: #0A0000; border-bottom: 2px solid #0A0000; padding-bottom: 8px; margin-bottom: 16px; display: inline-block; }
+    .sb-search { display: flex; align-items: center; border: 1.5px solid #e0e0e0; border-radius: 50px; background: #fff; padding: 6px 16px; gap: 8px; }
+    .sb-search input { border: none; outline: none; font-size: 15px; width: 100%; font-family: 'Outfit', sans-serif; background: transparent; color: #333; }
+    .sb-search input::placeholder { color: #aaa; }
+    .sb-recent-list { list-style: none; margin: 0; padding: 0; }
+    .sb-recent-list li { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .sb-recent-list li:last-child { border-bottom: none; }
+    .sb-recent-list a { font-size: 14px; color: #333; text-decoration: none; line-height: 1.5; display: block; }
+    .sb-recent-list a:hover { color: #003087; }
+    .sb-cat-list { list-style: none; margin: 0; padding: 0; }
+    .sb-cat-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 15px; }
+    .sb-cat-list li:last-child { border-bottom: none; }
+    .sb-cat-list a { color: #333; text-decoration: none; }
+    .sb-cat-list a:hover { color: #003087; }
+    .sb-cat-list a.active { color: #003087; font-weight: 700; }
+    .sb-cat-list span { color: #aaa; font-size: 13px; flex-shrink: 0; }
+    .sb-tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .sb-tag { font-size: 13px; color: #333; background: #e2e2e2; padding: 6px 14px; border-radius: 20px; text-decoration: none; transition: all 0.2s; }
+    .sb-tag:hover { background: #000; color: #fff; }
+
+    /* No posts */
+    .no-posts { text-align: center; padding: 60px 20px; color: #888; font-size: 18px; }
+    .no-posts a { color: #003087; font-weight: 600; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .cat-wrap { grid-template-columns: 1fr; gap: 40px; padding: 30px 30px 60px; }
+      .cat-sidebar { position: static; }
+    }
+    @media (max-width: 600px) {
+      .cat-hero { padding: 50px 16px 30px; }
+      .cat-hero h1 { font-size: 30px; }
+      .cat-wrap { padding: 20px 16px 50px; }
+      .post-card img { height: 220px; }
+      .post-card h2 { font-size: 20px; }
+    }
+  </style>
+
+  <main class="cat-page" id="main-content">
+
+    <!-- Hero -->
+    <div class="cat-hero">
+      <h1>{category.name}</h1>
+      <div class="cat-breadcrumb">
+        <a href="/">Home</a>
+        <span>›</span>
+        <a href="/blog">Blog</a>
+        <span>›</span>
+        <span>{category.name}</span>
+      </div>
+    </div>
+
+    <!-- Content + Sidebar -->
+    <div class="cat-wrap">
+
+      <!-- Posts -->
+      <div class="cat-posts">
+
+        {Array.isArray(posts) && posts.length > 0 ? (
+          <>
+            {posts.map((post: any) => {
+              const img = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+              const date = new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+              const cat = post._embedded?.['wp:term']?.[0]?.[0];
+              const excerpt = post.excerpt?.rendered?.replace(/<[^>]+>/g, '').substring(0, 160) + '...';
+              return (
+                <div class="post-card">
+                  {img && (
+                    <a href={`/blog/${post.slug}`}>
+                      <img src={img} alt={post.title.rendered} loading="lazy" />
+                    </a>
+                  )}
+                  <div class="post-info">
+                    <div class="post-meta-row">
+                      <span class="post-date-txt">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        {date}
+                      </span>
+                      {cat && <a href={`/category/${cat.slug}`} class="post-cat-tag">{cat.name}</a>}
+                    </div>
+                    <h2><a href={`/blog/${post.slug}`} set:html={post.title.rendered}></a></h2>
+                    <p class="post-excerpt">{excerpt}</p>
+                    <a class="read-more-link" href={`/blog/${post.slug}`}>
+                      Read More
+                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 6C0 5.77271 0.0902897 5.55473 0.251006 5.39402C0.411723 5.2333 0.629701 5.14301 0.856988 5.14301H10.7861L7.10615 1.46482C6.94523 1.3039 6.85482 1.08565 6.85482 0.858071C6.85482 0.630497 6.94523 0.412243 7.10615 0.251323C7.26707 0.0904038 7.48532 0 7.71289 0C7.94047 0 8.15872 0.0904038 8.31964 0.251323L13.4616 5.39325C13.5414 5.47286 13.6047 5.56743 13.6479 5.67154C13.6911 5.77566 13.7133 5.88728 13.7133 6C13.7133 6.11272 13.6911 6.22434 13.6479 6.32845C13.6047 6.43257 13.5414 6.52714 13.4616 6.60675L8.31964 11.7487C8.15872 11.9096 7.94047 12 7.71289 12C7.48532 12 7.26707 11.9096 7.10615 11.7487C6.94523 11.5878 6.85482 11.3695 6.85482 11.1419C6.85482 10.9144 6.94523 10.6961 7.10615 10.5352L10.7861 6.85699H0.856988C0.629701 6.85699 0.411723 6.7667 0.251006 6.60598C0.0902897 6.44527 0 6.22729 0 6Z" fill="#003087"/></svg>
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+
+            <!-- Pagination -->
+            <div class="pagination">
+              {page > 1 && <a href={`?page=${page - 1}`}>‹</a>}
+              {page > 2 && <a href="?page=1">1</a>}
+              {page > 3 && <span class="dots">...</span>}
+              {page > 1 && <a href={`?page=${page - 1}`}>{page - 1}</a>}
+              <span class="active">{page}</span>
+              {page < totalPages && <a href={`?page=${page + 1}`}>{page + 1}</a>}
+              {page < totalPages - 2 && <span class="dots">...</span>}
+              {page < totalPages - 1 && <a href={`?page=${totalPages}`}>{totalPages}</a>}
+              {page < totalPages && <a href={`?page=${page + 1}`}>›</a>}
+            </div>
+          </>
+        ) : (
+          <div class="no-posts">
+            <p>No posts found in this category.</p>
+            <a href="/blog">← Back to Blog</a>
+          </div>
+        )}
+
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="cat-sidebar">
+
+        <div class="sb-box">
+          <form class="sb-search" action="/blog" method="get">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+            <input type="search" name="s" placeholder="Search..." />
+          </form>
+        </div>
+
+        <div class="sb-box">
+          <h3>Recent Posts</h3>
+          <ul class="sb-recent-list">
+            {recentPosts.map((p: any) => (
+              <li><a href={`/blog/${p.slug}`} set:html={p.title?.rendered}></a></li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="sb-box">
+          <form class="sb-search" action="/blog" method="get">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+            <input type="search" name="s" placeholder="Type to search..." />
+          </form>
+        </div>
+
+        <div class="sb-box">
+          <h3>Blog Categories</h3>
+          <ul class="sb-cat-list">
+            {allCategories.filter((c: any) => c.count > 0).map((cat: any) => (
+              <li>
+                <a href={`/category/${cat.slug}`} class={cat.slug === slug ? 'active' : ''}>{cat.name}</a>
+                <span>({cat.count})</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="sb-box">
+          <h3>Technologies</h3>
+          <div class="sb-tag-cloud">
+            {tags.map((tag: any) => (
+              <a href={`/technology/${tag.slug}/`} class="sb-tag">{tag.name}</a>
+            ))}
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+</Layout>
