@@ -1,0 +1,201 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const { slug } = Astro.params;
+let post: any = null;
+try {
+  const r1 = await fetch(`https://demskigrdev.wpenginepowered.com/wp-json/wp/v2/results?slug=${slug}&_embed`);
+  if (r1.ok) { const d = await r1.json(); if (d.length > 0) post = d[0]; }
+} catch(e) {}
+if (!post) {
+  try {
+    const r2 = await fetch(`https://demskigroup.com/wp-json/wp/v2/results?slug=${slug}&_embed`);
+    if (r2.ok) { const d = await r2.json(); if (d.length > 0) post = d[0]; }
+  } catch(e) {}
+}
+
+const date = post ? new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+const featuredImg = post?._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+const cat = post?._embedded?.['wp:term']?.[0]?.[0];
+
+const recentRes = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=5');
+const recentPosts = recentRes.ok ? await recentRes.json() : [];
+
+const catRes = await fetch('https://demskigroup.com/wp-json/wp/v2/categories?per_page=20');
+const categories = catRes.ok ? await catRes.json() : [];
+
+const tagRes = await fetch('https://demskigroup.com/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc');
+const tags = tagRes.ok ? await tagRes.json() : [];
+---
+
+<Layout title={post ? `${post.title.rendered} - Demski Group` : 'Post Not Found'}>
+
+  <style is:global>
+    .post-page { font-family: 'Outfit', sans-serif; color: #282828; }
+    .post-hero { background: #faf9f5 !important; padding: 160px 20px 150px !important; text-align: center !important; display: block !important; }
+    .post-hero h1 { font-size: clamp(30px, 4vw, 56px) !important; font-weight: 800 !important; color: #0a0000 !important; line-height: 1.15 !important; margin: 0 auto 20px !important; max-width: 860px !important; text-align: center !important; font-family: 'Outfit', sans-serif !important; }
+    .post-hero-breadcrumb { font-size: 14px !important; color: #888 !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 6px !important; flex-wrap: wrap !important; }
+    .post-hero-breadcrumb a { color: #888; text-decoration: none; }
+    .post-hero-breadcrumb a:hover { color: #003087; }
+    .post-body-wrap { max-width: 1280px; margin: 0 auto; padding: 50px 60px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 60px; align-items: flex-start; }
+    .post-article { min-width: 0; overflow: hidden; }
+    .post-featured-img { width: 100%; height: auto; max-height: 500px; object-fit: cover; border-radius: 10px; display: block; margin-bottom: 28px; }
+    .post-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 30px; font-size: 15px; color: #888; }
+    .post-meta-item { display: flex; align-items: center; gap: 6px; }
+    .post-cat-tag { border: 1px solid #ccc; color: #555; padding: 2px 12px; border-radius: 20px; font-size: 14px; text-decoration: none; transition: all .2s; }
+    .post-cat-tag:hover { background: #003087; color: #fff; border-color: #003087; }
+    .post-content-body { font-size: 17px; line-height: 1.85; color: #333; overflow: hidden; word-break: break-word; }
+    /* Isolate Elementor injected styles */
+    .post-content-body style, .post-content-body link { display: none !important; }
+    .post-content-body .elementor-section { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    .post-content-body .e-con, .post-content-body .elementor-container { max-width: 100% !important; }
+    .post-content-body img { max-width: 100% !important; width: auto !important; height: auto !important; border-radius: 8px; margin: 20px 0; display: block; }
+    .post-content-body h2 { font-size: 26px; font-weight: 700; font-family: 'Outfit', sans-serif; color: #0a0000; line-height: 1.3; margin-top: 36px; margin-bottom: 12px; }
+    .post-content-body h3 { font-size: 21px; font-weight: 700; font-family: 'Outfit', sans-serif; color: #0a0000; line-height: 1.3; margin-top: 36px; margin-bottom: 12px; }
+    .post-content-body h4 { font-size: 18px; font-weight: 700; font-family: 'Outfit', sans-serif; color: #0a0000; margin-top: 28px; margin-bottom: 10px; }
+    .post-content-body p { margin: 0 0 18px; }
+    .post-content-body p:empty { display: none; }
+    .post-content-body ul, .post-content-body ol { margin: 8px 0 20px 28px; }
+    .post-content-body li { margin-bottom: 8px; line-height: 1.7; }
+    .post-content-body a { color: #003087; text-decoration: underline; }
+    .post-content-body a:hover { color: #0154b1; }
+    .post-content-body blockquote { border-left: 4px solid #003087; padding: 16px 24px; margin: 28px 0; background: #f5f8ff; border-radius: 0 8px 8px 0; font-style: italic; color: #555; }
+    .post-content-body strong, .post-content-body b { color: #0a0000; font-weight: 700; }
+    .post-content-body .wp-block-button__link { display: inline-flex !important; align-items: center; background: #f09300 !important; color: #fff !important; padding: 12px 24px !important; border-radius: 8px !important; font-size: 16px !important; font-weight: 600 !important; text-decoration: none !important; transition: background .2s; }
+    .post-content-body .wp-block-button__link:hover { background: #d98200 !important; }
+    .post-content-body hr { border: none; border-top: 1px solid #eee; margin: 36px 0; }
+    .post-cta-banner { background: #0a0000; border-radius: 16px; padding: 36px 40px; margin: 48px 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+    .post-cta-banner-img { width: 180px; height: 120px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+    .post-cta-text { flex: 1; }
+    .post-cta-text p { color: #fff; font-size: 20px; font-weight: 600; margin: 0 0 16px; line-height: 1.4; }
+    .post-cta-text a { display: inline-flex; align-items: center; gap: 8px; background: #f09300; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none !important; transition: background .2s; }
+    .post-cta-text a:hover { background: #d98200; }
+    .post-footer { margin-top: 40px; padding-top: 24px; border-top: 1px solid #eee; }
+    .post-back-link { display: inline-flex; align-items: center; gap: 8px; color: #003087; font-weight: 600; font-size: 15px; text-decoration: none; }
+    .post-back-link:hover { text-decoration: underline; }
+    .post-sidebar { position: sticky; top: 100px; }
+    .sb-box { background: #faf9f5; border: 1px solid #ebebeb; border-radius: 8px; padding: 22px; margin-bottom: 24px; }
+    .sb-box h3 { font-size: 17px; font-weight: 700; color: #0a0000; border-bottom: 2px solid #0A0000; padding-bottom: 8px; margin-bottom: 16px; display: inline-block; }
+    .sb-search { display: flex; align-items: center; border: 1.5px solid #e0e0e0; border-radius: 50px; background: #fff; padding: 6px 16px; gap: 8px; }
+    .sb-search input { border: none; outline: none; font-size: 15px; width: 100%; font-family: 'Outfit', sans-serif; background: transparent; color: #333; }
+    .sb-search input::placeholder { color: #aaa; }
+    .sb-recent-list { list-style: none; margin: 0; padding: 0; }
+    .sb-recent-list li { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .sb-recent-list li:last-child { border-bottom: none; }
+    .sb-recent-list a { font-size: 14px; color: #333; text-decoration: none; line-height: 1.5; display: block; }
+    .sb-recent-list a:hover { color: #003087; }
+    .sb-cat-list { list-style: none; margin: 0; padding: 0; }
+    .sb-cat-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 15px; }
+    .sb-cat-list li:last-child { border-bottom: none; }
+    .sb-cat-list a { color: #333; text-decoration: none; }
+    .sb-cat-list a:hover { color: #003087; }
+    .sb-cat-list span { color: #aaa; font-size: 13px; flex-shrink: 0; }
+    .sb-tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .sb-tag { font-size: 13px; color: #333; background: #e2e2e2; padding: 6px 14px; border-radius: 20px; text-decoration: none; transition: all .2s; }
+    .sb-tag:hover { background: #000; color: #fff; }
+    .not-found { text-align: center; padding: 120px 20px; font-size: 22px; color: #888; }
+    @media (max-width: 900px) {
+      .post-body-wrap { grid-template-columns: 1fr; gap: 40px; padding: 30px 30px 60px; }
+      .post-sidebar { position: static; }
+    }
+    @media (max-width: 600px) {
+      .post-hero { padding: 40px 16px 30px; }
+      .post-hero h1 { font-size: 26px; }
+      .post-body-wrap { padding: 20px 16px 50px; }
+      .post-cta-banner { flex-direction: column; padding: 24px; }
+      .post-cta-banner-img { width: 100%; height: 160px; }
+    }
+  </style>
+
+  {post ? (
+    <main class="post-page">
+      <div class="post-hero">
+        <h1>{post.title.rendered}</h1>
+        <div class="post-hero-breadcrumb">
+          <a href="/">Home</a>
+          <span>›</span>
+          <a href="/results/">Results</a>
+          <span>›</span>
+          <span>{post.title.rendered}</span>
+        </div>
+      </div>
+
+      <div class="post-body-wrap" style="max-width:1280px;margin:0 auto;padding:50px 60px 80px;display:grid;grid-template-columns:1fr 340px;gap:60px;align-items:flex-start;">
+        <article class="post-article" style="min-width:0;overflow:hidden;">
+          {featuredImg && <img class="post-featured-img" src={featuredImg} alt={post.title.rendered} loading="eager" />}
+
+          <div class="post-meta">
+            <span class="post-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              {date}
+            </span>
+            {cat && <a class="post-cat-tag" href={`/category/${cat.slug}`}>{cat.name}</a>}
+          </div>
+
+          <div class="post-content-body" set:html={post.content.rendered} />
+
+          <div class="post-cta-banner">
+            <img class="post-cta-banner-img" src="https://demskigroup.com/wp-content/uploads/2024/06/programmers-developing-software-in-team-2023-11-27-05-25-31-utc-1024x683.jpg" alt="Custom Software Consultation" loading="lazy" />
+            <div class="post-cta-text">
+              <p>Let's Talk About How Custom Software Can Scale Your Business</p>
+              <a href="/contact-us/">Schedule a Consultation →</a>
+            </div>
+          </div>
+
+          <div class="post-footer">
+            <a class="post-back-link" href="/results/">← Back to Results</a>
+          </div>
+        </article>
+
+        <aside class="post-sidebar" style="position:sticky;top:100px;">
+          <div class="sb-box">
+            <form class="sb-search" action="/blog/" method="get">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+              <input type="search" name="s" placeholder="Search..." />
+            </form>
+          </div>
+
+          <div class="sb-box">
+            <h3>Recent Posts</h3>
+            <ul class="sb-recent-list">
+              {recentPosts.map((p: any) => (
+                <li><a href={`/blog/${p.slug}`}>{p.title.rendered}</a></li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="sb-box">
+            <form class="sb-search" action="/blog/" method="get">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+              <input type="search" name="s" placeholder="Type to search..." />
+            </form>
+          </div>
+
+          <div class="sb-box">
+            <h3>Blog Categories</h3>
+            <ul class="sb-cat-list">
+              {categories.filter((c: any) => c.count > 0).map((c: any) => (
+                <li>
+                  <a href={`/category/${c.slug}`}>{c.name}</a>
+                  <span>({c.count})</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="sb-box">
+            <h3>Technologies</h3>
+            <div class="sb-tag-cloud">
+              {tags.map((t: any) => (
+                <a href={`/technology/${t.slug}/`} class="sb-tag">{t.name}</a>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  ) : (
+    <div class="not-found">Result not found. <a href="/results/" style="color:#003087">← Back to Results</a></div>
+  )}
+
+</Layout>
