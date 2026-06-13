@@ -480,8 +480,9 @@ h1, h2, h3, h4, h5, h6 {
 .biopac-name { font-family:'Outfit',sans-serif; font-size:22px; font-weight:700; color:#fff; }
 .biopac-desc { font-size:14px; color:rgba(255,255,255,0.8); line-height:1.7; margin:12px 0; }
 .biopac-link { font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:#fff; display:inline-flex; align-items:center; gap:6px; }
-.proj-four { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.proj-four { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .client-card {
+  box-sizing: border-box;
   background: #fff; border: 1px solid #ebebeb; border-radius: 14px;
   padding: 24px 18px 18px; display: flex; flex-direction: column;
   justify-content: space-between; align-items: center;
@@ -513,7 +514,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 6px;
 }
-.proj-main-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.proj-main-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 
 /* Skeletons */
 .skeleton {
@@ -1040,7 +1041,7 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 1024px) {
   .svc-grid { grid-template-columns: repeat(2,1fr); }
   .svc-card.wide { grid-column: span 2; }
-  .proj-main-grid { grid-template-columns: repeat(3,1fr); }
+  .proj-main-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 900px) {
   .svc-hero-inner { grid-template-columns: 1fr; }

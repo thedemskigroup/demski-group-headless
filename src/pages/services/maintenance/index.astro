@@ -567,6 +567,7 @@ import Layout from '../../../layouts/Layout.astro';
     color: #000;
   }
   .cd-hero__image { flex: 1.3; max-width: 624px; position: relative; left: 85px; }
+  @media (max-width: 1366px) { .cd-hero__image { left: 0; } }
   .cd-hero__image img {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -1221,6 +1222,7 @@ import Layout from '../../../layouts/Layout.astro';
     .cd-hero__inner,
     .cd-why__inner,
     .hp-process-body { flex-direction: column; gap: 40px; }
+    .cd-why__left img { width: 100%; max-width: 100%; margin-left: 0; height: auto; aspect-ratio: 16/10; }
     .hp-process-heading { flex: none; max-width: none; }
     .hp-process-heading h2, .hp-process-heading p { max-width: none; }
     .hp-process-right { position: static; }

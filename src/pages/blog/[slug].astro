@@ -108,8 +108,8 @@ const tags = tagRes.ok ? await tagRes.json() : [];
         </div>
       </div>
 
-      <div class="post-body-wrap" style="max-width:1280px;margin:0 auto;padding:50px 60px 80px;display:grid;grid-template-columns:1fr 340px;gap:60px;align-items:flex-start;">
-        <article class="post-article" style="min-width:0;overflow:hidden;">
+      <div class="post-body-wrap">
+        <article class="post-article">
           {featuredImg && <img class="post-featured-img" src={featuredImg} alt={post.title.rendered} loading="eager" />}
 
           <div class="post-meta">
@@ -135,7 +135,7 @@ const tags = tagRes.ok ? await tagRes.json() : [];
           </div>
         </article>
 
-        <aside class="post-sidebar" style="position:sticky;top:100px;">
+        <aside class="post-sidebar">
           <div class="sb-box">
             <form class="sb-search" action="/blog/" method="get">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>

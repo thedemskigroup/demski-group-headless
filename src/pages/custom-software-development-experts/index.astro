@@ -588,6 +588,9 @@ import Layout from '../../layouts/Layout.astro';
     box-shadow: none;
   }
   body.csd-page-class .logo img { content: url('/Logo3-white-outline.png'); height: 70px !important; }
+  @media (max-width: 1366px) {
+    body.csd-page-class .logo img { height: 50px !important; }
+  }
   @media (max-width: 900px) {
     body.csd-page-class .logo img { height: 40px !important; }
   }
@@ -599,6 +602,8 @@ import Layout from '../../layouts/Layout.astro';
 </style>
 
 <style>
+  *, *::before, *::after { box-sizing: border-box; }
+
   :root {
     --blue: #005cb9;
     --orange: #f09300;
@@ -1371,6 +1376,23 @@ import Layout from '../../layouts/Layout.astro';
     .csd-hero__logos-imgs { padding: 24px; }
     .csd-hero__logos-imgs img { max-height: 100px; }
 
+    .csd-hero__badges {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .csd-hero__badge {
+      min-width: 0;
+      width: 100%;
+    }
+    .csd-hero__badge img,
+    .csd-hero__badge--seal img {
+      max-height: 110px;
+      max-width: 100%;
+      width: auto;
+      height: auto;
+    }
+
     .csd-diff { padding-left: 20px; padding-right: 20px; }
     .csd-diff__head h2 { white-space: normal; }
     .csd-diff__card { padding: 32px 20px; }
@@ -1411,5 +1433,11 @@ import Layout from '../../layouts/Layout.astro';
     .svc-contact-right .tc-link { white-space: normal; }
     .tc-fraction-bar { transform: none; padding: 18px 0 14px; }
     .contact-right-img { height: 180px; transform: none; border-radius: 14px; margin-top: 4px; }
+  }
+
+  @media (max-width: 560px) {
+    .csd-cases__grid { grid-template-columns: 1fr; }
+    .csd-cases__tile--large { grid-column: span 1; grid-row: span 1; }
+    .csd-cases__link { right: 24px; }
   }
 </style>

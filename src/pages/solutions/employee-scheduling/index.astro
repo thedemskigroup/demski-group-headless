@@ -125,6 +125,12 @@ const cases = [
       .trust-banner-logos{padding-left:0}
       .trust-wrap{padding:30px}
     }
+    @media (max-width:480px){
+      .industries-grid{grid-template-columns:1fr;gap:32px}
+      .industry-item span{font-size:22px}
+      .trust-banner-logos{padding:16px 0;width:100%;justify-content:center}
+      .trust-banner-logos img{height:auto;width:100%;max-width:296px}
+    }
 
     .media-accordion{display:grid;grid-template-columns:31% 1fr;gap:60px;align-items:stretch;padding-top:60px;padding-bottom:60px}
     .media-accordion .feature-image{order:-1}

@@ -4,6 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 
 <Layout title="Cutting-Edge Technologies | The Demski Group" description="Discover the latest technologies used by Demski Group. We leverage advanced tools and platforms to deliver innovative software solutions." pageClass="technologies-page">
 <style slot="head">
+  *, *::before, *::after { box-sizing: border-box; }
   .technologies-page { font-family: 'Outfit', sans-serif; color: #282828; }
   .mob-br { display: none; }
 
@@ -293,7 +294,7 @@ import Layout from '../../layouts/Layout.astro';
   .biopac-name { font-family:'Outfit',sans-serif; font-size:22px; font-weight:700; color:#fff; }
   .biopac-desc { font-size:14px; color:rgba(255,255,255,0.8); line-height:1.7; margin:12px 0; }
   .biopac-link { font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:#fff; display:inline-flex; align-items:center; gap:6px; }
-  .proj-four { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .proj-four { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .client-card {
     background: #fff; border: 1px solid #ebebeb; border-radius: 14px;
     padding: 24px 18px 18px; display: flex; flex-direction: column;
@@ -325,7 +326,7 @@ import Layout from '../../layouts/Layout.astro';
     align-items: center;
     gap: 6px;
   }
-  .proj-main-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+  .proj-main-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 
   /* ── EXCELLENCE ── */
   .excellence-section {
@@ -688,13 +689,15 @@ import Layout from '../../layouts/Layout.astro';
   }
   .final-cta-image {
     flex: 1;
+    min-width: 0;
     padding: 0;
-    overflow: visible;
+    overflow: hidden;
     display: flex;
     align-items: flex-start;
   }
   .final-cta-image img {
     width: 926px;
+    max-width: 100%;
     height: 375px;
     object-fit: cover;
     object-position: left center;
@@ -725,7 +728,7 @@ import Layout from '../../layouts/Layout.astro';
     }
     .tech-brands-section, .tech-platforms, .tech-logos-section, .tech-code-future { padding: 50px 40px; }
     .svc-methods-inner { grid-template-columns: 220px 1fr; gap: 40px; }
-    .proj-main-grid { grid-template-columns: repeat(3,1fr); }
+    .proj-main-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .excellence-section { padding: 60px 40px 0; }
     .svc-pos { padding: 0 40px 60px; }
     .tech-brands-wrap { flex-direction: column; margin-top: -100px; padding: 24px 28px; }
