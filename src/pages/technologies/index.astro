@@ -290,12 +290,10 @@ import Layout from '../../layouts/Layout.astro';
   .biopac-card {
     background: #0a1628; border-radius: 18px; padding: 32px;
     display: flex; flex-direction: column; justify-content: space-between;
-    min-height: 300px; text-decoration: none;
-    transition: transform 0.25s, box-shadow 0.25s;
+    min-height: 300px;
     grid-row: span 2;
     box-shadow: 0 8px 28px rgba(0,0,0,0.18);
   }
-  .biopac-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.3); }
   .biopac-logo img {
     height: 60px; width: auto; object-fit: contain;
     filter: brightness(0) invert(1); display: block; margin-bottom: 16px;
@@ -308,11 +306,9 @@ import Layout from '../../layouts/Layout.astro';
     background: #fff; border: 1px solid #ebebeb; border-radius: 16px;
     padding: 24px 18px 18px; display: flex; flex-direction: column;
     justify-content: space-between; align-items: center;
-    text-decoration: none; transition: box-shadow 0.25s, transform 0.25s;
     min-height: 140px;
     box-shadow: 0 8px 28px rgba(0,0,0,0.14);
   }
-  .client-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
   .client-card-img {
     flex: 1; display: flex; align-items: center;
     justify-content: center; width: 100%; margin-bottom: 14px;
@@ -925,48 +921,48 @@ import Layout from '../../layouts/Layout.astro';
       </div>
 
       <div class="proj-top-wrap">
-        <a class="biopac-card" href="/our-clients/biopac/" style="grid-row:span 2">
+        <div class="biopac-card" style="grid-row:span 2">
           <div class="biopac-logo"><img src="https://demskigroup.com/wp-content/uploads/2024/06/Biopac-1-e1744133149662.png" alt="Biopac" loading="lazy" /></div>
           <p class="biopac-desc">The Demski Group successfully delivered a scalable and efficient web application for Biopac, enabling users to perform and track scientific studies online.</p>
           <span class="biopac-link">Read full case study <span class="svc-arrow"></span></span>
-        </a>
+        </div>
         <div class="proj-four">
-          <a class="client-card" href="/our-clients/shop-orthopedics/">
+          <div class="client-card">
             <div class="client-card-img"><img src="https://demskigroup.com/wp-content/uploads/2024/06/ShopOrthopedics-1.png" alt="ShopOrthopedics" loading="lazy" /></div>
             <span class="client-card-link">Read full case study <span class="svc-arrow"></span></span>
-          </a>
-          <a class="client-card" href="/our-clients/property-gauge/">
+          </div>
+          <div class="client-card">
             <div class="client-card-img"><img src="https://demskigroup.com/wp-content/uploads/2024/07/PropertyGauge.png" alt="PropertyGauge" loading="lazy" /></div>
             <span class="client-card-link">Read full case study <span class="svc-arrow"></span></span>
-          </a>
-          <a class="client-card" href="/our-clients/pnc-bank/">
+          </div>
+          <div class="client-card">
             <div class="client-card-img"><img src="https://demskigroup.com/wp-content/uploads/2024/06/company-logo-4.png" alt="PNC Bank" loading="lazy" /></div>
             <span class="client-card-link">Read full case study <span class="svc-arrow"></span></span>
-          </a>
-          <a class="client-card" href="/our-clients/mister-quik/">
+          </div>
+          <div class="client-card">
             <div class="client-card-img"><img src="https://demskigroup.com/wp-content/uploads/2024/07/mrquick.png" alt="Mister Quik" loading="lazy" /></div>
             <span class="client-card-link">Read full case study <span class="svc-arrow"></span></span>
-          </a>
+          </div>
         </div>
       </div>
 
       <div class="proj-main-grid">
-        <a class="client-card" href="/our-clients/jackson-hewitt/">
+        <div class="client-card">
           <div class="client-card-img"><img src="https://demskigroup.com/wp-content/uploads/2024/06/jacksonhewitt-1.png" alt="Jackson Hewitt" loading="lazy" /></div>
           <span class="client-card-link">Read full case study <span class="svc-arrow"></span></span>
-        </a>
-        <a class="client-card" href="/our-clients/seen-dating/">
+        </div>
+        <div class="client-card">
           <div class="client-card-img"><img src="https://demskigroup.com/wp-content/uploads/2024/06/SEENDating-1.png" alt="SEEN Dating" loading="lazy" /></div>
           <span class="client-card-link">Read full case study <span class="svc-arrow"></span></span>
-        </a>
-        <a class="client-card" href="/our-clients/willo/">
+        </div>
+        <div class="client-card">
           <div class="client-card-img"><img src="https://demskigroup.com/wp-content/uploads/2024/06/Willo.png" alt="Willo" loading="lazy" /></div>
           <span class="client-card-link">Read full case study <span class="svc-arrow"></span></span>
-        </a>
-        <a class="client-card" href="/our-clients/robomaster/">
+        </div>
+        <div class="client-card">
           <div class="client-card-img"><img src="https://demskigroup.com/wp-content/uploads/2024/06/Robomaster-1.png" alt="Robomaster" loading="lazy" /></div>
           <span class="client-card-link">Read full case study <span class="svc-arrow"></span></span>
-        </a>
+        </div>
       </div>
     </div>
   </section>
