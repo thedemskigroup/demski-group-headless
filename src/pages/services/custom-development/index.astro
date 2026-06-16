@@ -1,4 +1,4 @@
----
+﻿---
 import Layout from '../../../layouts/Layout.astro';
 ---
 
@@ -1111,10 +1111,10 @@ import Layout from '../../../layouts/Layout.astro';
     cursor: pointer;
   }
   .faq-q i { color: var(--blue); font-size: 16px; }
-  .faq-q[aria-expanded="true"] .icon-closed { display: none !important; }
-  .faq-q[aria-expanded="true"] .icon-open  { display: inline !important; }
-  .faq-q[aria-expanded="false"] .icon-open  { display: none !important; }
-  .faq-q[aria-expanded="false"] .icon-closed { display: inline !important; }
+  .faq-q[aria-expanded="true"] i.icon-closed { display: none !important; }
+  .faq-q[aria-expanded="true"] i.icon-open  { display: inline-block !important; }
+  .faq-q[aria-expanded="false"] i.icon-open  { display: none !important; }
+  .faq-q[aria-expanded="false"] i.icon-closed { display: inline-block !important; }
   .faq-a {
     display: none;
     padding: 0 0 20px 36px;
