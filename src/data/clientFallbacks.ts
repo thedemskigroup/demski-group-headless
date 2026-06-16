@@ -49,7 +49,7 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
   'biopac': {
     title: 'Biopac Systems',
     tagline: 'Powering Scientific Discovery Online.',
-    industries: ['Scientific Equipment'],
+    industries: ['Scientific Research', 'Data Analytics'],
     techStack: ['PHP', 'MySQL', 'JavaScript', 'AWS'],
     logo: '/logos/Biopac.png',
     screenshot: '/logos/Biopac.png',
@@ -796,7 +796,12 @@ export function normalizeClient(slug: string, apiItem: any | null): NormalizedCl
   const apiContent = extractCaseStudyHtml(apiItem?.content?.rendered || '');
   const apiExcerpt = cleanText(apiItem?.excerpt?.rendered);
   const apiImage = apiItem?._embedded?.['wp:featuredmedia']?.[0]?.source_url || '';
-  const apiIndustry = cleanText(apiItem?._embedded?.['wp:term']?.[0]?.[0]?.name);
+  const rawApiIndustry = cleanText(apiItem?._embedded?.['wp:term']?.[0]?.[0]?.name);
+  // Reject obviously wrong taxonomy values (e.g. "Bio Pack" — a stray WP tag
+  // accidentally assigned to BIOPAC). Fall back to static data for anything
+  // that doesn't look like a real industry label.
+  const KNOWN_BAD_INDUSTRIES = new Set(['bio pack', 'test', 'uncategorized']);
+  const apiIndustry = (rawApiIndustry && !KNOWN_BAD_INDUSTRIES.has(rawApiIndustry.toLowerCase())) ? rawApiIndustry : '';
 
   return {
     ...fallback,
