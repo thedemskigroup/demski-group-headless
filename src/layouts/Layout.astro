@@ -3,9 +3,19 @@ interface Props {
   title?: string;
   description?: string;
   pageClass?: string;
+  ogImage?: string;
+  canonical?: string;
 }
 
-const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props;
+const {
+  title = 'The Demski Group | Custom Software Development',
+  description = 'The Demski Group builds custom software, mobile apps, CRM systems, and web applications for businesses across the US. Schedule a free consultation today.',
+  pageClass = '',
+  ogImage = 'https://demskigroup.com/wp-content/uploads/2024/06/Logo3-768x137.webp',
+  canonical = Astro.url.href,
+} = Astro.props;
+
+const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -13,12 +23,34 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="The Demski Group" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
     <!-- Preconnect to external font/icon origins for faster resource loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Outfit font: non-blocking via preload + onload swap -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" /></noscript>
+    <!-- Font Awesome: non-blocking via print trick -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /></noscript>
     <style>
@@ -311,7 +343,7 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
       <!-- HEADER -->
       <header>
         <div class="logo">
-          <a href="/"><img src="/Logo3-768x137.webp" alt="Demski Group" /></a>
+          <a href="/"><img src="/Logo3-768x137.webp" alt="Demski Group" width="200" height="36" fetchpriority="high" /></a>
         </div>
         <nav>
           <div class="nav-dropdown">
@@ -430,11 +462,11 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
           <p><a href="mailto:contact@demskigroup.com" style="color:#000000;text-decoration:none;">contact@demskigroup.com</a></p>
           <h4 style="font-size:32px;margin-top:16px;margin-bottom:10px;">Follow Us</h4>
           <div class="social-row">
-            <a href="https://www.facebook.com/demskigroup/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-            <a href="https://x.com/demskigroup" target="_blank" aria-label="X"><i class="fab fa-x-twitter"></i></a>
-            <a href="https://www.linkedin.com/company/demskigroup/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-            <a href="https://www.instagram.com/demskigroup/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            <a href="https://g.co/kgs/WDaNBe6" target="_blank" aria-label="Google"><i class="fab fa-google"></i></a>
+            <a href="https://www.facebook.com/demskigroup/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="https://x.com/demskigroup" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter"><i class="fab fa-x-twitter"></i></a>
+            <a href="https://www.linkedin.com/company/demskigroup/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com/demskigroup/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://g.co/kgs/WDaNBe6" target="_blank" rel="noopener noreferrer" aria-label="Google"><i class="fab fa-google"></i></a>
           </div>
         </div>
       </div>
@@ -482,7 +514,7 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
         display:flex; justify-content:space-between; align-items:center;
         box-shadow: 0 2px 8px rgba(0,0,0,0.12);
       ">
-        <a href="/"><img src="/Logo3-768x137.webp" alt="Demski Group" style="height:42px;width:auto;" /></a>
+        <a href="/"><img src="/Logo3-768x137.webp" alt="Demski Group" width="200" height="36" style="height:42px;width:auto;" /></a>
         <a href="/contact-us/" class="scroll-cta-btn" style="
           background:#f09300;color:#fff;border:1.1px solid #f09300;
           padding:10px 20px;border-radius:6px;font-size:16px;font-weight:600;
@@ -975,8 +1007,8 @@ const { title = 'Demski Group', description = '', pageClass = '' } = Astro.props
     }
   </style>
 
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-  <script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js" defer></script>
+  <script defer>
   (function(){
     /* Inject button styles last so they beat every global override */
     const _s = document.createElement('style');

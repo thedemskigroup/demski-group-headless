@@ -29,6 +29,7 @@ for (const url of WP_URLS) {
 // / Results / Conclusion) below.
 const client = normalizeClient(slug, apiItem);
 const hasLiveContent = client.content.trim().length > 0;
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
 ---
 
 <Layout title={`${client.title} | Case Study – The Demski Group`} description={client.excerpt}>

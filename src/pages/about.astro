@@ -18,9 +18,13 @@ try {
     if (Array.isArray(data)) team = data;
   }
 } catch(e) { team = []; }
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
 ---
 
-<Layout title="About Us - The Demski Group">
+<Layout
+  title="About Us | The Demski Group"
+  description="Learn about The Demski Group — a US-based custom software development firm with 12+ years of experience, 600+ successful projects, and a team dedicated to building software that scales."
+>
 <style slot="head">
 /* ── GLOBAL ── */
 html { overflow-x: hidden; }

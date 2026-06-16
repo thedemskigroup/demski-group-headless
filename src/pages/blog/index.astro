@@ -38,9 +38,13 @@ try {
     if (Array.isArray(data)) tags = data;
   }
 } catch (e) { tags = []; }
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=3600');
 ---
 
-<Layout title="Our Blog - Demski Group">
+<Layout
+  title="Blog | The Demski Group"
+  description="Read the latest insights on custom software development, mobile apps, technology trends, and business automation from The Demski Group's expert team."
+>
 
   <style slot="head">
     .hero { text-align: center; padding: 150px 20px; background: #faf9f5; }

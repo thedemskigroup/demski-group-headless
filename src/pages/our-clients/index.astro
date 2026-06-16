@@ -88,7 +88,10 @@ const biopacDesc = biopac?.desc?.length > 20 ? biopac.desc : 'The Demski Group s
 const biopacPhoto = biopac?.photo || KNOWN_IMAGES[biopac?.slug] || '';
 ---
 
-<Layout title="Our Clients - The Demski Group">
+<Layout
+  title="Our Clients | The Demski Group"
+  description="Explore The Demski Group's client portfolio — from Fortune 500 companies like HP and PNC Bank to innovative startups. See how we've helped businesses grow with custom software."
+>
 <style is:global>
 @import url('https://api.fontshare.com/v2/css?f[]=general-sans@700,600,500,400&display=swap');
 html { overflow-x: hidden; }

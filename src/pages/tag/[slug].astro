@@ -26,7 +26,10 @@ try {
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=3600');
 ---
 
-<Layout title={`${tag?.name ?? slug} - Demski Group Blog`}>
+<Layout
+  title={`${tag?.name ?? slug} | The Demski Group Blog`}
+  description={`Browse all articles tagged "${tag?.name ?? slug}" on The Demski Group blog. Insights on custom software, mobile development, and technology trends.`}
+>
   <style slot="head">
     .tag-hero { text-align: center; padding: 50px 20px 30px; background: white; border-bottom: 1px solid #eee; }
     .tag-hero h1 { font-size: 50px; font-weight: 800; color: rgb(10,0,0); }

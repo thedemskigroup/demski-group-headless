@@ -35,6 +35,7 @@ for (const url of WP_REVIEW_URLS) {
   } catch(_) { continue; }
 }
 
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
 const offices = [
   { name: 'The Demski Group', address: '237 Delaware Ave #7', cityState: 'Olean, NY 14760', phone: '716-687-0840' },
   { address: '250 East 5th Street 15th floor', cityState: 'Cincinnati, OH 45202', phone: '513-643-8442' },
@@ -42,7 +43,10 @@ const offices = [
 ];
 ---
 
-<Layout title="Schedule a Free Consultation - The Demski Group">
+<Layout
+  title="Contact Us | Schedule a Free Consultation – The Demski Group"
+  description="Ready to build custom software? Contact The Demski Group to schedule a free consultation. We respond in under 1 hour. Offices in New York, Ohio, and Montana."
+>
 <style slot="head">
 html { overflow-x: hidden; }
 *, *::before, *::after { box-sizing: border-box; }

@@ -12,6 +12,7 @@ try {
     if (post && (!post.title?.rendered || !post.content?.rendered)) post = null;
   }
 } catch (e) { post = null; }
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
 
 const date = post ? new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 const featuredImg = post?._embedded?.['wp:featuredmedia']?.[0]?.source_url;
@@ -45,7 +46,11 @@ try {
 } catch (e) { tags = []; }
 ---
 
-<Layout title={post ? `${post.title.rendered} - Demski Group` : 'Post Not Found'}>
+<Layout
+  title={post ? `${post.title.rendered} | The Demski Group` : 'Post Not Found'}
+  description={post ? (post.excerpt?.rendered || '').replace(/<[^>]*>/g,'').replace(/\[&hellip;\]/g,'').trim().slice(0,160) : undefined}
+  ogImage={featuredImg || undefined}
+>
 
   <style is:global>
     .post-page { font-family: 'Outfit', sans-serif; color: #282828; }

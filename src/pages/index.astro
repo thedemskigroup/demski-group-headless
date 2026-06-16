@@ -74,9 +74,13 @@ for (const url of WP_REVIEW_URLS) {
     break;
   } catch(_) { continue; }
 }
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=3600');
 ---
 
-<Layout title="The Demski Group - Custom Software Development">
+<Layout
+  title="The Demski Group | Custom Software Development Company"
+  description="The Demski Group builds fully custom software, mobile apps, CRM systems, and web applications for businesses across the US. 12+ years, 600+ projects. Schedule a free consultation."
+>
 <!-- Preload hero background image (LCP resource) -->
 <link rel="preload" href="/hero-bg.jpg" as="image" media="(min-width: 769px)" slot="head" />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" slot="head" />
