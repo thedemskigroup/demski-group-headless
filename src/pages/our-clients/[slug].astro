@@ -15,12 +15,38 @@ const GRAPHIC_CARDS: Record<string, { bg: string; blurb: string }> = {
   },
 };
 
-// "Other Success Stories" cards — every other case-study client, shown on
-// every case study detail page. Graphic-card companies are sorted first so
-// the featured card leads the grid.
+// Real per-slug case-study logos (mirrors the map used on the Our Clients
+// listing page). Used instead of CLIENT_FALLBACKS.logo, which is the Demski
+// default / a stock photo for some clients.
+const KNOWN_LOGOS: Record<string, string> = {
+  'biopac': '/logos/Biopac.png',
+  'shop-orthopedics': 'https://demskigroup.com/wp-content/uploads/2024/06/ShopOrthopedics-1.png',
+  'property-gauge': 'https://demskigroup.com/wp-content/uploads/2024/07/PropertyGauge.png',
+  'mister-quik': 'https://demskigroup.com/wp-content/uploads/2024/07/mrquick.png',
+  'pnc-bank': 'https://demskigroup.com/wp-content/uploads/2024/06/company-logo-4.png',
+  'jackson-hewitt': 'https://demskigroup.com/wp-content/uploads/2024/06/jacksonhewitt-1.png',
+  'seen-dating': 'https://demskigroup.com/wp-content/uploads/2024/06/SEENDating-1.png',
+  'nu-borders': 'https://demskigroup.com/wp-content/uploads/2024/07/Nuborders.png',
+  'robomaster': 'https://demskigroup.com/wp-content/uploads/2024/06/Robomaster-1.png',
+  'zoomifi': 'https://demskigroup.com/wp-content/uploads/2024/06/Zoomifi-1.png',
+  'yawye': 'https://demskigroup.com/wp-content/uploads/2024/06/Yawye-1.png',
+  'tausi-brands': 'https://demskigroup.com/wp-content/uploads/2024/06/Tausi-1.png',
+  'corning-glass': 'https://demskigroup.com/wp-content/uploads/2024/07/corning-300x201-1.png',
+  'flower-moxie-case-study': 'https://demskigroup.com/wp-content/uploads/2024/07/Flowermoxie.png',
+  'golf-daddy': 'https://demskigroup.com/wp-content/uploads/2024/07/Branded-300x159.png',
+  'audiojack': 'https://demskigroup.com/wp-content/uploads/2024/06/audiojackhighres-300x159.png',
+  'willo': 'https://demskigroup.com/wp-content/uploads/2024/06/Willo.png',
+  'impact-team-tennis': 'https://demskigroup.com/wp-content/uploads/2025/02/ITTLogo-300x159.png',
+  'bite': 'https://demskigroup.com/wp-content/uploads/2024/08/newbitelogo.png',
+  'hewlett-packard-enterprise': '/logos/hpe.png',
+  'farmers-daughter-fibers': 'https://demskigroup.com/wp-content/uploads/2024/07/FarmersDaughter.png',
+};
+
+// "Other Success Stories" cards — every other case-study client.
+// Graphic-card companies are sorted first so the featured card leads the grid.
 const otherClients = Object.entries(CLIENT_FALLBACKS)
   .filter(([s]) => s !== slug)
-  .map(([s, d]) => ({ slug: s, title: d.title, logo: d.logo, graphic: GRAPHIC_CARDS[s] || null }))
+  .map(([s, d]) => ({ slug: s, title: d.title, logo: KNOWN_LOGOS[s] || d.logo, graphic: GRAPHIC_CARDS[s] || null }))
   .sort((a, b) => (b.graphic ? 1 : 0) - (a.graphic ? 1 : 0));
 
 const WP_URLS = [
@@ -182,7 +208,7 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
     }
     .btn-cta-orange:hover { background: #d98200; }
 
-    /* ── Other Success Stories grid (every case study) ── */
+    /* ── Other Success Stories grid (shop-orthopedics) ── */
     .cs-other-stories { background: #fff; }
     .cs-other-inner { max-width: 1280px; margin: 0 auto; padding: 30px 60px 70px; }
     .cs-other-stories h2 {
@@ -331,14 +357,14 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
         background: #F09300; color: #fff; text-decoration: none;
         font-size: 16px; font-weight: 600; font-family: 'Outfit', sans-serif;
         padding: 14px 28px; border-radius: 8px; margin: 0 12px 12px 0;
-        border: 1.1px solid #0A0000; transition: all 0.4s ease;
+        border: none; transition: all 0.4s ease;
       }
       .cs-willo .cs-content .elementor-element-67fd5fb a.elementor-button:hover,
       .cs-willo .cs-content .elementor-element-f8ea4ab a.elementor-button:hover,
       .cs-shop-orthopedics .cs-content .elementor-element-67fd5fb a.elementor-button:hover,
       .cs-shop-orthopedics .cs-content .elementor-element-2a3f537 a.elementor-button:hover,
       .cs-farmers-daughter-fibers .cs-content .elementor-element-67fd5fb a.elementor-button:hover {
-        background: #ffffff; color: #222; border: 1.1px solid #0A0000;
+        background: #ffffff; color: #222; border: none;
       }
       .cs-willo .cs-content .elementor-element-67fd5fb a[href^="tel:"].elementor-button::before,
       .cs-willo .cs-content .elementor-element-f8ea4ab a[href^="tel:"].elementor-button::before,
@@ -358,49 +384,6 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
         animation: willo-pairing-dash 0.7s linear infinite;
       }
 
-      /* ── Before/After comparison slider (wpr-before-after widget) ──
-         The WP-Royal plugin's JS/CSS isn't loaded here, so rebuild it as a
-         CSS clip slider driven by --pos; a small inline script handles drag.
-         image-1 = After (base), image-2 = Before (clipped overlay). */
-      .cs-willo .cs-content .wpr-ba-image-container {
-        --pos: 50%;
-        position: relative; display: block; width: max-content; max-width: 100%;
-        margin: 0 auto; line-height: 0; cursor: ew-resize; touch-action: none;
-        border-radius: 12px; overflow: hidden; user-select: none;
-      }
-      .cs-willo .cs-content .wpr-ba-image-1 { position: relative; }
-      .cs-willo .cs-content .wpr-ba-image-1 img {
-        display: block; height: auto; max-height: 480px; width: auto; margin: 0;
-      }
-      .cs-willo .cs-content .wpr-ba-image-2 {
-        position: absolute; inset: 0; overflow: hidden;
-        clip-path: inset(0 calc(100% - var(--pos)) 0 0);
-      }
-      .cs-willo .cs-content .wpr-ba-image-2 img {
-        position: absolute; inset: 0; width: 100%; height: 100%;
-        max-height: none; object-fit: cover; margin: 0;
-      }
-      .cs-willo .cs-content .wpr-ba-divider {
-        position: absolute; top: 0; bottom: 0; left: var(--pos);
-        width: 3px; background: #fff; transform: translateX(-50%); z-index: 3;
-        box-shadow: 0 0 6px rgba(0,0,0,0.25);
-      }
-      .cs-willo .cs-content .wpr-ba-divider-icons {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-        width: 40px; height: 40px; border-radius: 50%; background: #7c3aed;
-        color: #fff; display: flex; align-items: center; justify-content: center;
-        gap: 1px; box-shadow: 0 2px 10px rgba(0,0,0,0.35);
-      }
-      .cs-willo .cs-content .wpr-ba-divider-icons i { font-style: normal; font-size: 18px; line-height: 1; }
-      .cs-willo .cs-content .wpr-ba-divider-icons i.fa-angle-left::before { content: '\2039'; }
-      .cs-willo .cs-content .wpr-ba-divider-icons i.fa-angle-right::before { content: '\203A'; }
-      .cs-willo .cs-content .wpr-ba-label {
-        position: absolute; top: 12px; z-index: 2; padding: 4px 12px;
-        font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #fff;
-        background: rgba(0,0,0,0.55); border-radius: 4px; line-height: 1.4;
-      }
-      .cs-willo .cs-content .wpr-ba-label-1 { right: 12px; }
-      .cs-willo .cs-content .wpr-ba-label-2 { left: 12px; }
 
       /* ── Unlock the Benefits [b1228f9] benefit grid (55000c0) ──
          Six benefit items into a 2-column grid; each item keeps its top
@@ -576,6 +559,73 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
       from { background-position: 0 0; }
       to   { background-position: 30px 0; }
     }
+    @keyframes willo-pairing-dash-v {
+      from { background-position: 0 0; }
+      to   { background-position: 0 30px; }
+    }
+
+    /* ── Mobile pairing row (df41c73): shrink the two stacked phone images by
+       20% and run a vertical animated purple dashed line between them (the
+       empty html widget 1732c59 sits between the two images). Mobile only. */
+    @media (max-width: 900px) {
+      .cs-willo .cs-content img.wp-image-37309,
+      .cs-willo .cs-content img.wp-image-37295 {
+        max-width: 80%; height: auto; margin: 0 auto;
+      }
+      .cs-willo .cs-content .elementor-element-1732c59 {
+        width: 5px; height: 60px; margin: 12px auto; border-radius: 3px;
+        background-image: repeating-linear-gradient(180deg,
+          #7c3aed 0 18px, transparent 18px 30px);
+        background-size: 100% 30px; background-repeat: repeat-y;
+        animation: willo-pairing-dash-v 0.7s linear infinite;
+      }
+    }
+
+    /* ── Before/After comparison slider (wpr-before-after widget) ──
+       Applies at ALL widths (desktop AND phone) — the WP-Royal plugin's JS/CSS
+       isn't loaded here, so this rebuilds it as a CSS clip slider driven by
+       --pos; a small inline script handles drag. image-1 = After (base),
+       image-2 = Before (clipped overlay). Outside the desktop @media so the
+       mobile copy of the widget is a working slider too. */
+    .cs-willo .cs-content .wpr-ba-image-container {
+      --pos: 50%;
+      position: relative; display: block; width: max-content; max-width: 100%;
+      margin: 0 auto; line-height: 0; cursor: ew-resize; touch-action: none;
+      border-radius: 12px; overflow: hidden; user-select: none;
+    }
+    .cs-willo .cs-content .wpr-ba-image-1 { position: relative; }
+    .cs-willo .cs-content .wpr-ba-image-1 img {
+      display: block; height: auto; max-height: 480px; width: auto; margin: 0;
+    }
+    .cs-willo .cs-content .wpr-ba-image-2 {
+      position: absolute; inset: 0; overflow: hidden;
+      clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+    }
+    .cs-willo .cs-content .wpr-ba-image-2 img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      max-height: none; object-fit: cover; margin: 0;
+    }
+    .cs-willo .cs-content .wpr-ba-divider {
+      position: absolute; top: 0; bottom: 0; left: var(--pos);
+      width: 3px; background: #fff; transform: translateX(-50%); z-index: 3;
+      box-shadow: 0 0 6px rgba(0,0,0,0.25);
+    }
+    .cs-willo .cs-content .wpr-ba-divider-icons {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 40px; height: 40px; border-radius: 50%; background: #7c3aed;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      gap: 1px; box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    }
+    .cs-willo .cs-content .wpr-ba-divider-icons i { font-style: normal; font-size: 18px; line-height: 1; }
+    .cs-willo .cs-content .wpr-ba-divider-icons i.fa-angle-left::before { content: '\2039'; }
+    .cs-willo .cs-content .wpr-ba-divider-icons i.fa-angle-right::before { content: '\203A'; }
+    .cs-willo .cs-content .wpr-ba-label {
+      position: absolute; top: 12px; z-index: 2; padding: 4px 12px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #fff;
+      background: rgba(0,0,0,0.55); border-radius: 4px; line-height: 1.4;
+    }
+    .cs-willo .cs-content .wpr-ba-label-1 { right: 12px; }
+    .cs-willo .cs-content .wpr-ba-label-2 { left: 12px; }
 
     .cs-content { font-size: 17px; line-height: 1.7; color: #333; word-break: break-word; }
     .cs-content h2 {

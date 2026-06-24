@@ -206,9 +206,9 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
   },
   'willo': {
     title: 'Willo',
-    tagline: 'Supporting a Modern Video Interviewing Platform.',
-    industries: ['HR Tech'],
-    techStack: ['React', 'Node.js', 'AWS'],
+    tagline: 'A Smart IoT Toothbrush That Makes Kids’ Brushing Fun.',
+    industries: ['IoT', 'Consumer Health'],
+    techStack: ['Kotlin', 'Swift', 'Node.js', 'AWS'],
     logo: 'https://demskigroup.com/wp-content/uploads/2024/07/Willo-1.png',
     screenshot: 'https://demskigroup.com/wp-content/uploads/2024/07/Willo-1.png',
     project: 'Willo needed a development partner to support and extend its video interviewing platform, helping the team ship improvements reliably.',
