@@ -58,24 +58,28 @@ const FALLBACK_CLIENTS: any[] = Object.entries(CLIENT_FALLBACKS).map(([slug, dat
   desc: data.tagline,
 }));
 
+const LIST_FIELDS = '_fields=id,slug,link,title,excerpt,featured_media,_links.wp:featuredmedia';
+
 let clients: any[] = [];
 try {
-  let all: any[] = [], page = 1, totalPages = 1;
-  do {
-    const res = await fetch(`${WP_BASE}?_embed&per_page=100&page=${page}`, { signal: AbortSignal.timeout(20000) });
-    if (!res.ok) break;
-    const tp = res.headers.get('X-WP-TotalPages');
-    if (tp) totalPages = parseInt(tp);
-    const data = await res.json();
-    if (!Array.isArray(data) || !data.length) break;
-    all = [...all, ...data];
-    page++;
-  } while (page <= totalPages);
-  clients = all.map((item: any) => ({
-    id: item.id, name: clean(item.title?.rendered), slug: item.slug||'',
-    link: normalizeLink(item.link, item.slug), photo: extractPhoto(item),
-    desc: clean(item.excerpt?.rendered||'').replace(/\[&hellip;\]/g,''),
-  }));
+  const first = await fetch(`${WP_BASE}?_embed&per_page=100&page=1&${LIST_FIELDS}`, { signal: AbortSignal.timeout(8000) });
+  if (first.ok) {
+    const totalPages = parseInt(first.headers.get('X-WP-TotalPages') || '1');
+    const firstData = await first.json();
+    const restPages = await Promise.all(
+      Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) =>
+        fetch(`${WP_BASE}?_embed&per_page=100&page=${i + 2}&${LIST_FIELDS}`, { signal: AbortSignal.timeout(8000) })
+          .then(r => r.ok ? r.json() : [])
+          .catch(() => [])
+      )
+    );
+    const all = [...(Array.isArray(firstData) ? firstData : []), ...restPages.flat()];
+    clients = all.map((item: any) => ({
+      id: item.id, name: clean(item.title?.rendered), slug: item.slug||'',
+      link: normalizeLink(item.link, item.slug), photo: extractPhoto(item),
+      desc: clean(item.excerpt?.rendered||'').replace(/\[&hellip;\]/g,''),
+    }));
+  }
 } catch(e) { console.warn('SSR clients fetch failed:', e); }
 
 if (!clients.length) clients = FALLBACK_CLIENTS;

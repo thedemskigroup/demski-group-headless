@@ -3,7 +3,9 @@ import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   output: 'server',
-  adapter: vercel(),
+  adapter: vercel({
+    maxDuration: 30,
+  }),
   compressHTML: true,
   redirects: {
     '/services/cross-platform/': '/technologies/hybrid/',

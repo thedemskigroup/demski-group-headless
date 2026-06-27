@@ -12,6 +12,7 @@ try {
     if (post && (!post.title?.rendered || !post.content?.rendered)) post = null;
   }
 } catch (e) { post = null; }
+if (!post) Astro.response.status = 404;
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
 
 const date = post ? new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';

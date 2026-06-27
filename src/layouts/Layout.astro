@@ -38,6 +38,31 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
+    <!-- Structured data: Organization -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'The Demski Group',
+      url: 'https://demskigroup.com',
+      logo: 'https://demskigroup.com/wp-content/uploads/2024/06/Logo3-768x137.webp',
+      email: 'contact@demskigroup.com',
+      sameAs: [
+        'https://www.facebook.com/demskigroup/',
+        'https://x.com/demskigroup',
+        'https://www.linkedin.com/company/demskigroup/',
+        'https://www.instagram.com/demskigroup/',
+        'https://g.co/kgs/WDaNBe6',
+      ],
+      contactPoint: [
+        { '@type': 'ContactPoint', telephone: '+1-716-670-4514', contactType: 'customer service', areaServed: 'US' },
+      ],
+      address: [
+        { '@type': 'PostalAddress', streetAddress: '237 Delaware Ave #7', addressLocality: 'Olean', addressRegion: 'NY', postalCode: '14760', addressCountry: 'US' },
+        { '@type': 'PostalAddress', streetAddress: '250 East 5th Street 15th floor', addressLocality: 'Cincinnati', addressRegion: 'OH', postalCode: '45202', addressCountry: 'US' },
+        { '@type': 'PostalAddress', streetAddress: '1001 S. Main St. #8131', addressLocality: 'Kalispell', addressRegion: 'MT', postalCode: '59901', addressCountry: 'US' },
+      ],
+    })} />
+
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -438,12 +463,12 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
         <div class="footer-col">
           <h4>Explore</h4>
           <a href="/services/">Services</a>
-          <a href="/services/">Methodologies</a>
+          <a href="/methodologies/">Methodologies</a>
           <a href="/technologies/">Technologies</a>
-          <a href="/services/">Custom Development</a>
-          <a href="/services/">Enterprise Software</a>
-          <a href="/services/">Mobile Development</a>
-          <a href="/services/">IoT Development</a>
+          <a href="/services/custom-development/">Custom Development</a>
+          <a href="/services/enterprise-software/">Enterprise Software</a>
+          <a href="/services/app-development/">Mobile Development</a>
+          <a href="/services/iot-development/">IoT Development</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>
@@ -497,6 +522,21 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
           mobileDropBtn.closest('.mobile-dropdown')?.classList.toggle('open');
         });
       }
+
+      // Escape closes the open mobile menu and returns focus to its trigger.
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (mobileMenu?.classList.contains('open')) {
+          mobileMenu.classList.remove('open');
+          hamburger?.classList.remove('open');
+          hamburger?.focus();
+        }
+        document.querySelectorAll('.nav-dropdown-menu').forEach((menu) => {
+          if (menu.matches(':hover, :focus-within')) {
+            (menu.closest('.nav-dropdown')?.querySelector('.nav-trigger'))?.focus();
+          }
+        });
+      });
     </script>
 
     <!-- Scroll-triggered sticky bar (desktop only, appears after 5% scroll) -->
@@ -586,6 +626,10 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
           var onHam = (hamScroll && hamScroll.contains(e.target)) || (hamMain && hamMain.contains(e.target));
           if (!inDrawer && !onHam) closeMenu();
         });
+        // Escape closes the drawer when opened via the sticky scroll bar
+        document.addEventListener('keydown', function(e){
+          if (e.key === 'Escape' && mobileMenu && mobileMenu.classList.contains('open')) closeMenu();
+        });
 
         function update() {
           var sy = window.scrollY;
@@ -610,9 +654,11 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
     </script>
 
   <!-- ══ CHATBOT WIDGET ══ -->
-  <!-- Self-contained: injects its own DOM, styles, and EmailJS. No duplicate IDs. -->
-  <script src="/widget.js"
-    data-avatar="/avatar-alex.webp"
+  <!-- Loaded live from the deployed chatbot (single source of truth).
+       Self-contained: injects its own DOM, styles, and EmailJS. No duplicate IDs.
+       No data-avatar override here — the widget's own deployed default
+       (avatar-alex.png) is the source of truth for branding. -->
+  <script src="https://wordpress-astro-bot.vercel.app/widget.js"
     data-bot-name="Alex"
     data-bot-title="The Demski Group"
     async></script>

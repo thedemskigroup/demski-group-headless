@@ -74,10 +74,11 @@ for (const url of WP_URLS) {
 // / Results / Conclusion) below.
 const client = normalizeClient(slug, apiItem);
 const hasLiveContent = client.content.trim().length > 0;
+if (!apiItem && !CLIENT_FALLBACKS[slug]) Astro.response.status = 404;
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
 ---
 
-<Layout title={`${client.title} | Case Study – The Demski Group`} description={client.excerpt}>
+<Layout title={`${client.title} | Case Study – The Demski Group`} description={client.excerpt} ogImage={client.logo}>
 
   <style slot="head">
     .cs-page { font-family: 'Outfit', sans-serif; color: #1b1c1d; }
@@ -219,11 +220,12 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
     .cs-other-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 175px; gap: 20px; }
     .cs-other-card {
       display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-      gap: 16px; background: #fff; border: 1px solid #ececec; border-radius: 12px;
+      gap: 16px; background: #fff; border: 1px solid #ebebeb; border-radius: 28px;
       padding: 28px 18px; text-decoration: none;
-      transition: box-shadow 0.2s, transform 0.2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+      transition: box-shadow 0.25s;
     }
-    .cs-other-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.12); transform: translateY(-3px); }
+    .cs-other-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
     .cs-other-card-logo { flex: 1; display: flex; align-items: center; justify-content: center; }
     .cs-other-card-logo img { max-height: 70px; max-width: 80%; object-fit: contain; }
     .cs-other-card-link { font-size: 14px; font-weight: 600; color: #0a0000; white-space: nowrap; }
@@ -566,6 +568,12 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
       .cs-biopac .cs-content .elementor-element-7f32615 > .e-con-inner > .elementor-element,
       .cs-biopac .cs-content .elementor-element-2a3f537 > .e-con-inner > .elementor-element {
         flex: 1 1 0; min-width: 0;
+      }
+      /* The "Implementation & Development Process" row is the exception: its
+         heading sits full-width on top with the two-sided timeline full-width
+         below, so this row stacks instead of splitting into two columns. */
+      .cs-biopac .cs-content .elementor-element-7f32615 > .e-con-inner {
+        display: block;
       }
 
       /* ══════════ MISTER-QUIK (new) (.cs-mister-quik-case-study-new) ══════════
@@ -924,6 +932,193 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
     }
     .cs-content .wpr-description p { margin: 0 0 20px; }
 
+    /* ══════════ BIOPAC — restore the two-sided "Implementation & Development
+       Process" timeline (overrides the flatten rules above). Without Elementor's
+       stylesheet the widget is unstyled, so the full timeline is authored here:
+       a centre track with a green fill that grows on scroll (see the IIFE at the
+       end of the file), node markers, and alternating cards. ══════════ */
+    .cs-biopac .cs-content .wpr-timeline-centered {
+      position: relative; display: block; width: 100%;
+      max-width: 920px; margin: 40px auto; padding: 6px 0;
+    }
+    /* centre track + green scroll-fill */
+    .cs-biopac .cs-content .wpr-middle-line {
+      display: block; position: absolute; top: 0; bottom: 0;
+      left: 50%; transform: translateX(-50%);
+      width: 4px; background: #e3e6ea; border-radius: 4px; overflow: hidden;
+    }
+    .cs-biopac .cs-content .wpr-middle-line::after {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%;
+      height: var(--cs-tl-progress, 0%);
+      background: #34a853;
+    }
+    .cs-biopac .cs-content .wpr-timeline-fill { display: none; }
+    /* entries occupy half the width, alternating sides */
+    .cs-biopac .cs-content .wpr-timeline-entry {
+      display: block; position: relative; width: 50%;
+      box-sizing: border-box; margin: 0 0 34px; padding: 0;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry.wpr-left-aligned {
+      left: 0; padding-right: 46px; text-align: right;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry.wpr-right-aligned {
+      left: 50%; padding-left: 46px; text-align: left;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry-inner { display: block; width: 100%; }
+    /* node marker sitting on the centre line */
+    /* Node markers centred on the line: empty rings for the first two steps,
+       glyphs (refresh / check / rocket) for the rest. A node turns green once
+       the scroll-fill passes it (cs-tl-active toggled by the IIFE below). */
+    .cs-biopac .cs-content .wpr-main-line-icon {
+      display: flex; align-items: center; justify-content: center;
+      position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+      width: 46px; height: 46px; border-radius: 50%;
+      background: #fff; border: 3px solid #c6ccd4; box-sizing: border-box;
+      color: #aeb4bd; transition: border-color 0.3s, color 0.3s;
+    }
+    .cs-biopac .cs-content .wpr-left-aligned .wpr-main-line-icon { right: -23px; }
+    .cs-biopac .cs-content .wpr-right-aligned .wpr-main-line-icon { left: -23px; }
+    .cs-biopac .cs-content .wpr-main-line-icon::after {
+      content: ''; width: 21px; height: 21px; background: currentColor;
+      -webkit-mask: var(--cs-tl-icon) center / contain no-repeat;
+      mask: var(--cs-tl-icon) center / contain no-repeat;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(1) .wpr-main-line-icon::after,
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(2) .wpr-main-line-icon::after { display: none; }
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(3) .wpr-main-line-icon {
+      --cs-tl-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/></svg>");
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(4) .wpr-main-line-icon {
+      --cs-tl-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>");
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(5) .wpr-main-line-icon {
+      --cs-tl-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M12 2.2c2.6 2.85 3.7 6.05 3.7 8.9 0 1.05-.18 2.1-.5 3.15l-1.3-1.05h-3.8l-1.3 1.05c-.32-1.05-.5-2.1-.5-3.15 0-2.85 1.1-6.05 3.7-8.9zM8.4 15.1l-2.1 2.1v2.2l2.7-1.1zM15.6 15.1l2.1 2.1v2.2l-2.7-1.1zM12 6.6a1.85 1.85 0 1 0 0 3.7 1.85 1.85 0 0 0 0-3.7z'/></svg>");
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry.cs-tl-active .wpr-main-line-icon {
+      border-color: #34a853; color: #34a853;
+    }
+    /* card */
+    .cs-biopac .cs-content .wpr-story-info-vertical,
+    .cs-biopac .cs-content .wpr-timeline-content-wrapper {
+      display: block; width: 100%; max-width: 100%; flex: none; margin: 0; padding: 0;
+    }
+    .cs-biopac .cs-content .wpr-content-wrapper {
+      display: block; width: 100%; box-sizing: border-box;
+      background: #fff; border: 1px solid #ececec;
+      border-radius: 18px; padding: 28px 34px; text-align: center;
+      box-shadow: 0 12px 34px rgba(0,0,0,0.16); transition: box-shadow 0.25s;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry:hover .wpr-content-wrapper {
+      box-shadow: 0 16px 44px rgba(0,0,0,0.22);
+    }
+    .cs-biopac .cs-content .wpr-title-wrap { display: block; width: 100%; margin: 0; padding: 0; }
+    .cs-biopac .cs-content .wpr-title {
+      display: block; margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #2b2b2b;
+    }
+    .cs-biopac .cs-content .wpr-description { display: block; width: 100%; margin: 0; padding: 0; }
+    .cs-biopac .cs-content .wpr-description p { margin: 0; font-size: 15px; line-height: 1.65; color: #5a6b7b; }
+    /* stack to a single left-aligned column on small screens, with the nodes
+       running down a rail on the left clear of the cards */
+    @media (max-width: 768px) {
+      .cs-biopac .cs-content .wpr-middle-line { left: 23px; transform: translateX(-50%); }
+      .cs-biopac .cs-content .wpr-timeline-entry,
+      .cs-biopac .cs-content .wpr-timeline-entry.wpr-left-aligned,
+      .cs-biopac .cs-content .wpr-timeline-entry.wpr-right-aligned {
+        width: 100%; left: 0; padding: 0 0 0 64px; text-align: left;
+      }
+      .cs-biopac .cs-content .wpr-content-wrapper { padding: 22px 24px; text-align: left; }
+      .cs-biopac .cs-content .wpr-title { font-size: 19px; }
+      .cs-biopac .cs-content .wpr-left-aligned .wpr-main-line-icon,
+      .cs-biopac .cs-content .wpr-right-aligned .wpr-main-line-icon { left: 0; right: auto; }
+    }
+
+    /* ══════════ BIOPAC — "Challenges & Requirements" flip cards ══════════
+       The four cards beside the heading are EAEL flip-box markup with no plugin
+       CSS/JS shipped, so the whole interaction is authored here: a 2×2 grid of
+       cards that flip vertically (rotateX) on hover — dark front (icon + title)
+       to a blue back (description). Fully self-contained, no Elementor runtime. */
+    .cs-biopac .cs-content .elementor-element-1f5c71b,
+    .cs-biopac .cs-content .elementor-element-f52b3f5 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    }
+    .cs-biopac .cs-content .elementor-element-1f5c71b { margin-bottom: 18px; }
+    .cs-biopac .cs-content .eael-elements-flip-box-container {
+      position: relative; height: 290px; background: transparent;
+      perspective: 1200px; margin: 0;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-flip-card {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d; transition: transform 0.6s ease;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-container:hover .eael-elements-flip-box-flip-card,
+    .cs-biopac .cs-content .eael-elements-flip-box-container:focus-within .eael-elements-flip-box-flip-card {
+      transform: rotateX(180deg);
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-front-container,
+    .cs-biopac .cs-content .eael-elements-flip-box-rear-container {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      border-radius: 16px; overflow: hidden; color: #fff;
+      -webkit-backface-visibility: hidden; backface-visibility: hidden;
+    }
+    /* dark front — a distinct background image per card, with a subtle dark
+       overlay so the centred icon + title stay legible */
+    .cs-biopac .cs-content .eael-elements-flip-box-front-container {
+      background-color: #0a1f38;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    }
+    .cs-biopac .cs-content .elementor-element-928e07a .eael-elements-flip-box-front-container {
+      background-image: linear-gradient(180deg, rgba(6,16,32,0.12), rgba(6,16,32,0.42)), url("/cards/scalability.svg");
+    }
+    .cs-biopac .cs-content .elementor-element-322ff8f .eael-elements-flip-box-front-container {
+      background-image: linear-gradient(180deg, rgba(4,18,24,0.12), rgba(4,18,24,0.42)), url("/cards/data-management.svg");
+    }
+    .cs-biopac .cs-content .elementor-element-3b66714 .eael-elements-flip-box-front-container {
+      background-image: linear-gradient(180deg, rgba(6,14,32,0.12), rgba(6,14,32,0.42)), url("/cards/performance.svg");
+    }
+    .cs-biopac .cs-content .elementor-element-122983b .eael-elements-flip-box-front-container {
+      background-image: linear-gradient(180deg, rgba(10,7,32,0.12), rgba(10,7,32,0.45)), url("/cards/billing.svg");
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-rear-container {
+      transform: rotateX(180deg);
+      background: linear-gradient(160deg, #1c6fd6 0%, #0f54b1 100%);
+    }
+    /* neutralise the EAEL table-cell wrappers and set our own padding */
+    .cs-biopac .cs-content .eael-elements-slider-display-table,
+    .cs-biopac .cs-content .eael-elements-flip-box-vertical-align,
+    .cs-biopac .cs-content .eael-elements-flip-box-padding {
+      display: block; width: 100%; height: auto; margin: 0; box-sizing: border-box;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-padding { padding: 26px 24px; }
+    .cs-biopac .cs-content .eael-elements-flip-box-heading {
+      font-size: 22px; font-weight: 700; color: #fff; margin: 12px 0 0; line-height: 1.25;
+      word-break: normal; overflow-wrap: normal; hyphens: none;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-content p {
+      font-size: 14px; line-height: 1.6; color: #fff; margin: 0;
+    }
+    /* icons (white, masked) */
+    .cs-biopac .cs-content .eael-elements-flip-box-icon-image {
+      display: block; width: 48px; height: 48px; margin: 0 auto;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-icon-image::before {
+      content: ''; display: block; width: 100%; height: 100%; background: #fff;
+      -webkit-mask: var(--cs-fb-icon) center / contain no-repeat;
+      mask: var(--cs-fb-icon) center / contain no-repeat;
+    }
+    .cs-biopac .cs-content .elementor-element-928e07a .eael-elements-flip-box-icon-image {
+      --cs-fb-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z'/></svg>");
+    }
+    .cs-biopac .cs-content .elementor-element-322ff8f .eael-elements-flip-box-icon-image {
+      --cs-fb-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M12 3C7.58 3 4 4.34 4 6s3.58 3 8 3 8-1.34 8-3-3.58-3-8-3zM4 8v3c0 1.66 3.58 3 8 3s8-1.34 8-3V8c0 1.66-3.58 3-8 3S4 9.66 4 8zm0 5v3c0 1.66 3.58 3 8 3s8-1.34 8-3v-3c0 1.66-3.58 3-8 3s-8-1.34-8-3z'/></svg>");
+    }
+    .cs-biopac .cs-content .elementor-element-3b66714 .eael-elements-flip-box-icon-image {
+      --cs-fb-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.27-10.44zm-9.79 6.84a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z'/></svg>");
+    }
+    .cs-biopac .cs-content .elementor-element-122983b .eael-elements-flip-box-icon-image {
+      --cs-fb-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z'/></svg>");
+    }
+
     @media (max-width: 900px) {
       .cs-content, .cs-content p { font-size: 16px; }
       .cs-content h2 { font-size: 26px; margin: 36px 0 12px; }
@@ -1137,6 +1332,40 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
           return b && b.classList.contains('active');
         });
         show(start < 0 ? 0 : start);
+      });
+
+      // BIOPAC implementation timeline: grow the green centre line as the
+      // section scrolls through the viewport (the Royal widget's own JS isn't
+      // present, so the fill is driven here).
+      document.querySelectorAll('.cs-biopac .wpr-timeline-centered').forEach(function (tl) {
+        var line = tl.querySelector('.wpr-middle-line');
+        if (!line) return;
+        var entries = [].slice.call(tl.querySelectorAll('.wpr-timeline-entry'));
+        var ticking = false;
+        function render() {
+          ticking = false;
+          var r = tl.getBoundingClientRect();
+          var vh = window.innerHeight || document.documentElement.clientHeight;
+          // The fill tip tracks the vertical centre of the screen: the green
+          // line grows to exactly where the viewport middle crosses the
+          // timeline, so its end stays mid-screen as the user scrolls past.
+          var pct = ((vh * 0.5) - r.top) / r.height * 100;
+          pct = Math.max(0, Math.min(100, pct));
+          line.style.setProperty('--cs-tl-progress', pct + '%');
+          // light up each node once the green fill reaches its centre.
+          var fillPx = pct / 100 * line.offsetHeight;
+          entries.forEach(function (en) {
+            var center = en.offsetTop + en.offsetHeight / 2;
+            en.classList.toggle('cs-tl-active', fillPx >= center);
+          });
+        }
+        // rAF-throttle so the tip follows the scroll position with no lag.
+        function update() {
+          if (!ticking) { ticking = true; requestAnimationFrame(render); }
+        }
+        render();
+        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
       });
     })();
   </script>
