@@ -54,14 +54,38 @@ const WP_URLS = [
   `https://demskigrdev.wpenginepowered.com/wp-json/wp/v2/our-clients?slug=${slug}&_embed`,
 ];
 
+// In-memory cache, keyed by slug, surviving for the life of the server
+// process. Bespoke per-slug designs (biopac's premium hero/sidebar/results
+// layout, willo's zigzag, etc.) only render when the live WP fetch below
+// succeeds — if it's slow or down, the page silently falls back to the
+// generic structured template (CLIENT_FALLBACKS), which looks nothing like
+// the reference design. Production already tolerates this via the
+// Cache-Control header (s-maxage=300) once behind a CDN, but that gives no
+// protection in local dev or on a cold serverless start, where every
+// request re-fetches from scratch. Caching the last good response here
+// means one flaky fetch doesn't repeatedly degrade the page every reload.
+const API_CACHE: Map<string, { item: any; expires: number }> =
+  ((globalThis as any).__csApiCache ??= new Map());
+
 let apiItem: any = null;
-for (const url of WP_URLS) {
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) continue;
+const cachedEntry = API_CACHE.get(slug);
+if (cachedEntry && cachedEntry.expires > Date.now()) {
+  apiItem = cachedEntry.item;
+} else {
+  // Race both mirrors instead of trying them sequentially — halves the
+  // worst-case wait when one host is slow rather than simply unreachable.
+  const fetches = WP_URLS.map(async (url) => {
+    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) throw new Error(`bad status ${res.status}`);
     const data = await res.json();
-    if (Array.isArray(data) && data.length) { apiItem = data[0]; break; }
-  } catch (_) { continue; }
+    if (Array.isArray(data) && data.length) return data[0];
+    throw new Error('empty result');
+  });
+  const results = await Promise.allSettled(fetches);
+  for (const r of results) {
+    if (r.status === 'fulfilled') { apiItem = r.value; break; }
+  }
+  if (apiItem) API_CACHE.set(slug, { item: apiItem, expires: Date.now() + 5 * 60 * 1000 });
 }
 
 // Always produces a complete object — title/logo/industries/sections are
@@ -73,6 +97,45 @@ for (const url of WP_URLS) {
 // back to the static structured sections (Project / Solution / Key Features
 // / Results / Conclusion) below.
 const client = normalizeClient(slug, apiItem);
+
+function spliceBiopacProjectRow(html: string, industries: string[], techStack: string[]): string {
+  const openRe = /<div[^>]*\belementor-element-88d1c9a\b[^>]*>/;
+  const openMatch = html.match(openRe);
+  if (!openMatch || openMatch.index === undefined) return html;
+  const startIdx = openMatch.index;
+  const tagRe = /<\/?div\b[^>]*>/gi;
+  tagRe.lastIndex = startIdx;
+  let depth = 0;
+  let endIdx = -1;
+  let m: RegExpExecArray | null;
+  while ((m = tagRe.exec(html)) !== null) {
+    const isClose = m[0].startsWith('</');
+    depth += isClose ? -1 : 1;
+    if (depth === 0) { endIdx = m.index + m[0].length; break; }
+  }
+  if (endIdx === -1) return html;
+  const before = html.slice(0, startIdx);
+  const imageDiv = html.slice(startIdx, endIdx);
+  const after = html.slice(endIdx);
+  const tagSpans = techStack.map((t) => '<span class="cs-ps-tag">' + t + '</span>').join('');
+  const sidebarHtml =
+    '<div class="cs-project-sidebar">' +
+      '<div class="cs-ps-group">' +
+        '<div class="cs-ps-label">Industry</div>' +
+        '<div class="cs-ps-value">' + industries.join(', ') + '</div>' +
+      '</div>' +
+      '<div class="cs-ps-group">' +
+        '<div class="cs-ps-label">Tech Stack</div>' +
+        '<div class="cs-ps-tags">' + tagSpans + '</div>' +
+      '</div>' +
+    '</div>';
+  return before + '<div class="cs-project-row">' + sidebarHtml + '<div class="cs-project-image">' + imageDiv + '</div></div>' + after;
+}
+
+if (slug === 'biopac') {
+  client.content = spliceBiopacProjectRow(client.content, client.industries, client.techStack);
+}
+
 const hasLiveContent = client.content.trim().length > 0;
 if (!apiItem && !CLIENT_FALLBACKS[slug]) Astro.response.status = 404;
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
@@ -122,6 +185,64 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
     }
     .cs-hero-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
+    /* ══════════ BIOPAC premium hero card (.cs-biopac only) ══════════
+       Reference design wraps the hero copy + logo in one large soft-gray
+       rounded card instead of a plain white band, with a white sub-card
+       just for the logo. */
+    /* The reference design does NOT wrap the headline/paragraph in a card —
+       only the logo sits in its own light-gray box, plain white everywhere
+       else (verified by sampling the reference PNG: (200,750)/(60,250) etc.
+       are all pure #fff; only the logo's bounding box is #F0F0F0). */
+    .cs-biopac.cs-page .cs-hero { background: #fff; padding: 56px 60px 0; border-bottom: none; }
+    .cs-biopac.cs-page .cs-hero-inner {
+      max-width: 1280px; background: none; border-radius: 0;
+      padding: 0 0 56px; gap: 56px;
+    }
+    .cs-biopac.cs-page .cs-hero .breadcrumb { display: none; }
+    .cs-biopac.cs-page .cs-hero h1 { font-size: clamp(34px, 4vw, 52px); font-weight: 700; max-width: 620px; }
+    .cs-biopac.cs-page .cs-hero-intro {
+      font-size: 17px; color: #444; line-height: 1.7; max-width: 560px; margin: 20px 0 0;
+    }
+    .cs-biopac.cs-page .cs-hero-logo {
+      width: 420px; height: 380px; border: none; border-radius: 16px;
+      background: #F0F0F0; box-shadow: none; padding: 40px;
+    }
+
+    /* ── Trust strip (biopac only): black band with logos of real, existing
+       Demski Group clients (the same logos used elsewhere in the project —
+       see KNOWN_LOGOS above). No fabricated brands — the reference mock
+       shows brands (Riot Games, Allstate, Bank of America...) that aren't
+       actual Demski Group clients, so real clients' logos fill the same
+       2-row/3-col grid + divider layout instead.
+
+       One entry here used to be wrong: "PNC Bank" pointed at
+       company-logo-4.png, which is actually Property Gauge's circular icon,
+       not PNC's. Run through the white silhouette filter it collapsed into
+       a meaningless solid white disc — replaced with a verified client. ── */
+    .cs-trust-strip {
+      background:
+        repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 64px),
+        repeating-linear-gradient(25deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 64px),
+        #0a0a0a;
+    }
+    .cs-trust-inner {
+      max-width: 1280px; margin: 0 auto; padding: 0 60px;
+      min-height: 260px; display: flex; align-items: center; justify-content: center;
+      gap: 48px;
+    }
+    .cs-trust-label {
+      color: #fff; font-size: 20px; font-weight: 600; line-height: 1.35;
+      margin: 0; flex-shrink: 0; width: 230px;
+    }
+    .cs-trust-divider { width: 1px; height: 140px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
+    /* /public/biopac/logoswhite.webp is the exact reference asset: a single
+       1076×385 composite of all 6 trust logos (HPE/Riot Games/Allstate top
+       row, Bank of America/Herbalife/Rinnai bottom row), already pure white
+       on a transparent background — no color filter needed, unlike the
+       individual logo files used elsewhere on the site. Sized by height with
+       width:auto so it scales at its native ~2.8:1 aspect ratio. */
+    .cs-trust-logos { height: 170px; width: auto; object-fit: contain; flex-shrink: 0; }
+
     /* ── Body layout ── */
     .cs-body-wrap {
       max-width: 1280px;
@@ -147,6 +268,21 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
     }
 
     .cs-article { min-width: 0; overflow: hidden; }
+
+    /* ══════════ BIOPAC premium layout (.cs-biopac only) ══════════
+       Wider container (1280/1180 per the approved reference). Unlike every
+       other case study (where Industries/Tech Stack is a persistent sticky
+       sidebar column), biopac's reference design runs "The Project"
+       paragraph full width, then places Industry/Tech Stack beside the
+       dashboard screenshot specifically — spliced into the content as
+       .cs-project-row by spliceBiopacProjectRow() above. The .cs-project-*
+       rules themselves live in the is:global style block below, not here —
+       this block's selectors get an Astro scope attribute added to every
+       compound segment, but .cs-project-row etc. are injected at runtime via
+       set:html and never receive that attribute, so a scoped rule for them
+       can never match (see the is:global block for the full explanation). */
+    .cs-biopac.cs-page .cs-body-wrap { max-width: 1280px; padding: 64px 60px 0; grid-template-columns: 1fr; }
+    .cs-biopac.cs-page .cs-sidebar { display: none; }
 
     /* ── Feature list ── */
     .cs-feature { margin-bottom: 28px; }
@@ -220,11 +356,12 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
     .cs-other-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 175px; gap: 20px; }
     .cs-other-card {
       display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-      gap: 16px; background: #fff; border: 1px solid #ececec; border-radius: 12px;
+      gap: 16px; background: #fff; border: 1px solid #ebebeb; border-radius: 28px;
       padding: 28px 18px; text-decoration: none;
-      transition: box-shadow 0.2s, transform 0.2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+      transition: box-shadow 0.25s;
     }
-    .cs-other-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.12); transform: translateY(-3px); }
+    .cs-other-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
     .cs-other-card-logo { flex: 1; display: flex; align-items: center; justify-content: center; }
     .cs-other-card-logo img { max-height: 70px; max-width: 80%; object-fit: contain; }
     .cs-other-card-link { font-size: 14px; font-weight: 600; color: #0a0000; white-space: nowrap; }
@@ -274,6 +411,20 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
       .cs-cta-text { flex: none; padding: 36px 24px 30px; }
       .cs-cta-image { flex: none; margin: 0; padding: 0 10px 30px; width: 100%; box-sizing: border-box; display: flex; justify-content: center; }
       .cs-cta-image img { width: 100%; max-width: 100%; height: 220px; object-fit: cover; object-position: center 65%; border-radius: 16px; margin: 0; }
+      /* BIOPAC-specific overrides: these must live in THIS scoped style
+         block, not the is:global one below — Astro adds a scoping
+         attribute to every selector segment in a scoped <style>, which
+         gives the desktop ".cs-biopac.cs-page .cs-body-wrap" rule (also
+         scoped, line ~174) higher specificity than an unscoped media-query
+         override could ever beat, regardless of source order. */
+      .cs-biopac.cs-page .cs-hero { padding: 28px 20px 0; }
+      .cs-biopac.cs-page .cs-hero-inner { padding: 0 0 32px; gap: 28px; }
+      .cs-biopac.cs-page .cs-hero-logo { width: 100%; max-width: 320px; height: 260px; padding: 28px; margin: 0 auto; }
+      .cs-biopac.cs-page .cs-body-wrap { padding: 32px 20px 0; }
+      .cs-trust-inner { flex-direction: column; align-items: flex-start; min-height: 0; padding: 32px 20px; gap: 20px; }
+      .cs-trust-label { width: auto; font-size: 17px; }
+      .cs-trust-divider { display: none; }
+      .cs-trust-logos { height: auto; width: 100%; max-width: 360px; }
     }
   </style>
 
@@ -567,6 +718,18 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
       .cs-biopac .cs-content .elementor-element-7f32615 > .e-con-inner > .elementor-element,
       .cs-biopac .cs-content .elementor-element-2a3f537 > .e-con-inner > .elementor-element {
         flex: 1 1 0; min-width: 0;
+      }
+      /* The "Implementation & Development Process" row is the exception: its
+         heading sits full-width on top with the two-sided timeline full-width
+         below, so this row stacks instead of splitting into two columns. */
+      .cs-biopac .cs-content .elementor-element-7f32615 > .e-con-inner {
+        display: block;
+      }
+      /* "The Solution" is the same kind of exception: heading+intro sits
+         full-width on top, with the 3+2 card grid full-width below — not
+         split 50/50 into two side-by-side columns like Challenges/Results. */
+      .cs-biopac .cs-content .elementor-element-6a9c337 > .e-con-inner {
+        display: block;
       }
 
       /* ══════════ MISTER-QUIK (new) (.cs-mister-quik-case-study-new) ══════════
@@ -925,6 +1088,494 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
     }
     .cs-content .wpr-description p { margin: 0 0 20px; }
 
+    /* ══════════ BIOPAC — restore the two-sided "Implementation & Development
+       Process" timeline (overrides the flatten rules above). Without Elementor's
+       stylesheet the widget is unstyled, so the full timeline is authored here:
+       a centre track with a green fill that grows on scroll (see the IIFE at the
+       end of the file), node markers, and alternating cards. ══════════ */
+    .cs-biopac .cs-content .wpr-timeline-centered {
+      position: relative; display: block; width: 100%;
+      max-width: 920px; margin: 40px auto; padding: 6px 0;
+    }
+    /* centre track + green scroll-fill */
+    .cs-biopac .cs-content .wpr-middle-line {
+      display: block; position: absolute; top: 0; bottom: 0;
+      left: 50%; transform: translateX(-50%);
+      width: 4px; background: #e3e6ea; border-radius: 4px; overflow: hidden;
+    }
+    .cs-biopac .cs-content .wpr-middle-line::after {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%;
+      height: var(--cs-tl-progress, 0%);
+      background: #34a853;
+    }
+    .cs-biopac .cs-content .wpr-timeline-fill { display: none; }
+    /* entries occupy half the width, alternating sides */
+    .cs-biopac .cs-content .wpr-timeline-entry {
+      display: block; position: relative; width: 50%;
+      box-sizing: border-box; margin: 0 0 34px; padding: 0;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry.wpr-left-aligned {
+      left: 0; padding-right: 46px; text-align: right;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry.wpr-right-aligned {
+      left: 50%; padding-left: 46px; text-align: left;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry-inner { display: block; width: 100%; }
+    /* node marker sitting on the centre line */
+    /* Node markers centred on the line: empty rings for the first two steps,
+       glyphs (refresh / check / rocket) for the rest. A node turns green once
+       the scroll-fill passes it (cs-tl-active toggled by the IIFE below). */
+    .cs-biopac .cs-content .wpr-main-line-icon {
+      display: flex; align-items: center; justify-content: center;
+      position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+      width: 46px; height: 46px; border-radius: 50%;
+      background: #fff; border: 3px solid #c6ccd4; box-sizing: border-box;
+      color: #aeb4bd; transition: border-color 0.3s, color 0.3s;
+    }
+    .cs-biopac .cs-content .wpr-left-aligned .wpr-main-line-icon { right: -23px; }
+    .cs-biopac .cs-content .wpr-right-aligned .wpr-main-line-icon { left: -23px; }
+    .cs-biopac .cs-content .wpr-main-line-icon::after {
+      content: ''; width: 21px; height: 21px; background: currentColor;
+      -webkit-mask: var(--cs-tl-icon) center / contain no-repeat;
+      mask: var(--cs-tl-icon) center / contain no-repeat;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(1) .wpr-main-line-icon::after,
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(2) .wpr-main-line-icon::after { display: none; }
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(3) .wpr-main-line-icon {
+      --cs-tl-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/></svg>");
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(4) .wpr-main-line-icon {
+      --cs-tl-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>");
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry:nth-of-type(5) .wpr-main-line-icon {
+      --cs-tl-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M12 2.2c2.6 2.85 3.7 6.05 3.7 8.9 0 1.05-.18 2.1-.5 3.15l-1.3-1.05h-3.8l-1.3 1.05c-.32-1.05-.5-2.1-.5-3.15 0-2.85 1.1-6.05 3.7-8.9zM8.4 15.1l-2.1 2.1v2.2l2.7-1.1zM15.6 15.1l2.1 2.1v2.2l-2.7-1.1zM12 6.6a1.85 1.85 0 1 0 0 3.7 1.85 1.85 0 0 0 0-3.7z'/></svg>");
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry.cs-tl-active .wpr-main-line-icon {
+      border-color: #34a853; color: #34a853;
+    }
+    /* card */
+    .cs-biopac .cs-content .wpr-story-info-vertical,
+    .cs-biopac .cs-content .wpr-timeline-content-wrapper {
+      display: block; width: 100%; max-width: 100%; flex: none; margin: 0; padding: 0;
+    }
+    .cs-biopac .cs-content .wpr-content-wrapper {
+      display: block; width: 100%; box-sizing: border-box;
+      background: #fff; border: 1px solid #ececec;
+      border-radius: 18px; padding: 28px 34px; text-align: center;
+      box-shadow: 0 12px 34px rgba(0,0,0,0.16); transition: box-shadow 0.25s;
+    }
+    .cs-biopac .cs-content .wpr-timeline-entry:hover .wpr-content-wrapper {
+      box-shadow: 0 16px 44px rgba(0,0,0,0.22);
+    }
+    .cs-biopac .cs-content .wpr-title-wrap { display: block; width: 100%; margin: 0; padding: 0; }
+    .cs-biopac .cs-content .wpr-title {
+      display: block; margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #2b2b2b;
+    }
+    .cs-biopac .cs-content .wpr-description { display: block; width: 100%; margin: 0; padding: 0; }
+    .cs-biopac .cs-content .wpr-description p { margin: 0; font-size: 15px; line-height: 1.65; color: #5a6b7b; }
+    /* stack to a single left-aligned column on small screens, with the nodes
+       running down a rail on the left clear of the cards */
+    @media (max-width: 768px) {
+      .cs-biopac .cs-content .wpr-middle-line { left: 23px; transform: translateX(-50%); }
+      .cs-biopac .cs-content .wpr-timeline-entry,
+      .cs-biopac .cs-content .wpr-timeline-entry.wpr-left-aligned,
+      .cs-biopac .cs-content .wpr-timeline-entry.wpr-right-aligned {
+        width: 100%; left: 0; padding: 0 0 0 64px; text-align: left;
+      }
+      .cs-biopac .cs-content .wpr-content-wrapper { padding: 22px 24px; text-align: left; }
+      .cs-biopac .cs-content .wpr-title { font-size: 19px; }
+      .cs-biopac .cs-content .wpr-left-aligned .wpr-main-line-icon,
+      .cs-biopac .cs-content .wpr-right-aligned .wpr-main-line-icon { left: 0; right: auto; }
+    }
+
+    /* ══════════ BIOPAC — "Challenges & Requirements" flip cards ══════════
+       The four cards beside the heading are EAEL flip-box markup with no plugin
+       CSS/JS shipped, so the whole interaction is authored here: a 2×2 grid of
+       cards that flip vertically (rotateX) on hover — dark front (icon + title)
+       to a blue back (description). Fully self-contained, no Elementor runtime. */
+    .cs-biopac .cs-content .elementor-element-1f5c71b,
+    .cs-biopac .cs-content .elementor-element-f52b3f5 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    }
+    .cs-biopac .cs-content .elementor-element-1f5c71b { margin-bottom: 18px; }
+    .cs-biopac .cs-content .eael-elements-flip-box-container {
+      position: relative; height: 290px; background: transparent;
+      perspective: 1200px; margin: 0;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-flip-card {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d; transition: transform 0.6s ease;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-container:hover .eael-elements-flip-box-flip-card,
+    .cs-biopac .cs-content .eael-elements-flip-box-container:focus-within .eael-elements-flip-box-flip-card {
+      transform: rotateX(180deg);
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-front-container,
+    .cs-biopac .cs-content .eael-elements-flip-box-rear-container {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      border-radius: 16px; overflow: hidden; color: #fff;
+      -webkit-backface-visibility: hidden; backface-visibility: hidden;
+    }
+    /* dark front — a distinct background image per card, with a subtle dark
+       overlay so the centred icon + title stay legible */
+    .cs-biopac .cs-content .eael-elements-flip-box-front-container {
+      background-color: #0a1f38;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    }
+    .cs-biopac .cs-content .elementor-element-928e07a .eael-elements-flip-box-front-container {
+      background-image: linear-gradient(180deg, rgba(6,16,32,0.12), rgba(6,16,32,0.42)), url("/cards/scalability.svg");
+    }
+    .cs-biopac .cs-content .elementor-element-322ff8f .eael-elements-flip-box-front-container {
+      background-image: linear-gradient(180deg, rgba(4,18,24,0.12), rgba(4,18,24,0.42)), url("/cards/data-management.svg");
+    }
+    .cs-biopac .cs-content .elementor-element-3b66714 .eael-elements-flip-box-front-container {
+      background-image: linear-gradient(180deg, rgba(6,14,32,0.12), rgba(6,14,32,0.42)), url("/cards/performance.svg");
+    }
+    .cs-biopac .cs-content .elementor-element-122983b .eael-elements-flip-box-front-container {
+      background-image: linear-gradient(180deg, rgba(10,7,32,0.12), rgba(10,7,32,0.45)), url("/cards/billing.svg");
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-rear-container {
+      transform: rotateX(180deg);
+      background: linear-gradient(160deg, #1c6fd6 0%, #0f54b1 100%);
+    }
+    /* neutralise the EAEL table-cell wrappers and set our own padding */
+    .cs-biopac .cs-content .eael-elements-slider-display-table,
+    .cs-biopac .cs-content .eael-elements-flip-box-vertical-align,
+    .cs-biopac .cs-content .eael-elements-flip-box-padding {
+      display: block; width: 100%; height: auto; margin: 0; box-sizing: border-box;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-padding { padding: 26px 24px; }
+    .cs-biopac .cs-content .eael-elements-flip-box-heading {
+      font-size: 22px; font-weight: 700; color: #fff; margin: 12px 0 0; line-height: 1.25;
+      word-break: normal; overflow-wrap: normal; hyphens: none;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-content p {
+      font-size: 14px; line-height: 1.6; color: #fff; margin: 0;
+    }
+    /* icons (white, masked) */
+    .cs-biopac .cs-content .eael-elements-flip-box-icon-image {
+      display: block; width: 48px; height: 48px; margin: 0 auto;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-icon-image::before {
+      content: ''; display: block; width: 100%; height: 100%; background: #fff;
+      -webkit-mask: var(--cs-fb-icon) center / contain no-repeat;
+      mask: var(--cs-fb-icon) center / contain no-repeat;
+    }
+    .cs-biopac .cs-content .elementor-element-928e07a .eael-elements-flip-box-icon-image {
+      --cs-fb-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z'/></svg>");
+    }
+    .cs-biopac .cs-content .elementor-element-322ff8f .eael-elements-flip-box-icon-image {
+      --cs-fb-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M12 3C7.58 3 4 4.34 4 6s3.58 3 8 3 8-1.34 8-3-3.58-3-8-3zM4 8v3c0 1.66 3.58 3 8 3s8-1.34 8-3V8c0 1.66-3.58 3-8 3S4 9.66 4 8zm0 5v3c0 1.66 3.58 3 8 3s8-1.34 8-3v-3c0 1.66-3.58 3-8 3s-8-1.34-8-3z'/></svg>");
+    }
+    .cs-biopac .cs-content .elementor-element-3b66714 .eael-elements-flip-box-icon-image {
+      --cs-fb-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.27-10.44zm-9.79 6.84a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z'/></svg>");
+    }
+    .cs-biopac .cs-content .elementor-element-122983b .eael-elements-flip-box-icon-image {
+      --cs-fb-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z'/></svg>");
+    }
+
+    /* ══════════ BIOPAC — premium page-wide typography + spacing ══════════ */
+    .cs-biopac .cs-content { line-height: 1.8; }
+    .cs-biopac .cs-content h2 { font-size: 38px; margin: 80px 0 18px; }
+    .cs-biopac .cs-content h2:first-child { margin-top: 0; }
+    .cs-biopac .cs-content h3 { font-size: 24px; font-weight: 600; }
+
+    /* "The Project" paragraphs run full content width — both the reference
+       PNG and the live production page wrap these at ~3 long lines, not the
+       ~5 short lines a 760px cap produces. (Previously capped at 760px,
+       which squeezed the text into a narrow column and made the dashboard
+       screenshot below look shoved off to the right with a big empty gap.) */
+
+    /* ── Dashboard screenshot: larger, centred, soft shadow ── */
+    .cs-biopac .cs-content .elementor-element-88d1c9a img {
+      max-width: 900px; width: 100%; margin: 40px auto; display: block;
+      border-radius: 16px; box-shadow: 0 16px 48px rgba(10,20,40,0.14);
+    }
+
+    /* ── Project row: Industry/Tech Stack beside the dashboard screenshot
+       (spliced into the content by spliceBiopacProjectRow() in the
+       frontmatter — see that function for why it's positioned here rather
+       than floated beside "The Project" text). ── */
+    /* Reference measurements (sampled directly off the reference PNG):
+       - Sidebar's last content (bottom divider) sits at y=2456, the image's
+         bottom edge at y=2458 — a 2px difference, i.e. bottom-aligned, not
+         top-aligned. The sidebar is shorter than the image, so flipping to
+         align-items:end pushes the gap to the top of the row instead of the
+         bottom, matching the reference exactly.
+       - "INDUSTRY"/"TECH STACK" are NOT small uppercase eyebrow labels —
+         they're large (~26px), regular-tracking, sentence-case headings,
+         clearly bigger than the 17px body copy, not a 13px caption style.
+       - The tech-stack pills are bigger and lighter than before: ~18px
+         regular-weight text in a generously padded, fully-rounded outline
+         (not a small bold 14px chip). */
+    .cs-biopac .cs-content .cs-project-row {
+      display: grid; grid-template-columns: 300px 1fr; gap: 48px;
+      align-items: end; margin: 40px 0;
+    }
+    .cs-biopac .cs-content .cs-project-sidebar { display: flex; flex-direction: column; gap: 32px; padding-top: 4px; }
+    .cs-biopac .cs-content .cs-ps-group { padding-bottom: 26px; border-bottom: 1px solid #e2e2e2; }
+    .cs-biopac .cs-content .cs-ps-group:last-child { border-bottom: none; padding-bottom: 0; }
+    .cs-biopac .cs-content .cs-ps-label {
+      font-size: 26px; font-weight: 600; letter-spacing: normal; text-transform: uppercase;
+      color: #1b1c2e; margin-bottom: 14px;
+    }
+    .cs-biopac .cs-content .cs-ps-value { font-size: 19px; color: #3a3d4a; line-height: 1.6; }
+    .cs-biopac .cs-content .cs-ps-tags { display: flex; flex-wrap: wrap; gap: 12px; }
+    .cs-biopac .cs-content .cs-ps-tag {
+      font-size: 18px; font-weight: 500; color: #1b1c2e; background: transparent;
+      border: 1.5px solid #1b1c2e; padding: 11px 22px; border-radius: 30px; white-space: nowrap;
+    }
+    .cs-biopac .cs-content .cs-project-image { min-width: 0; }
+    .cs-biopac .cs-content .cs-project-image img { margin: 0; }
+    @media (max-width: 800px) {
+      .cs-biopac .cs-content .cs-project-row { grid-template-columns: 1fr; gap: 24px; }
+    }
+
+    /* ── Introduction: wider measure to match the spec's readability target ── */
+    .cs-biopac .cs-content .elementor-element-44cc23f p { max-width: 780px; }
+
+    /* ── Challenges flip cards: rounder corners + a soft lift on hover,
+       layered with the existing flip interaction. ── */
+    .cs-biopac .cs-content .eael-elements-flip-box-container {
+      border-radius: 18px; box-shadow: 0 10px 28px rgba(10,20,40,0.14);
+      transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-container:hover {
+      transform: translateY(-6px); box-shadow: 0 18px 40px rgba(10,20,40,0.24);
+    }
+    .cs-biopac .cs-content .eael-elements-flip-box-front-container,
+    .cs-biopac .cs-content .eael-elements-flip-box-rear-container { border-radius: 18px; }
+
+    /* ── Solution: one unified light-gray card containing all six items in
+       a centered 3-col/2-row grid, matching the reference (not separate
+       elevated white cards — a single card with a subtle grid texture,
+       each item's title underlined with a thin rule, text centered). ── */
+    .cs-biopac .cs-content .elementor-element-3c1c7ce {
+      box-sizing: border-box;
+      margin: 32px 0; background: #eef0f2; border-radius: 20px; padding: 48px 40px;
+      background-image: repeating-linear-gradient(0deg, rgba(10,20,40,0.035) 0 1px, transparent 1px 64px), repeating-linear-gradient(90deg, rgba(10,20,40,0.035) 0 1px, transparent 1px 64px);
+    }
+    .cs-biopac .cs-content .elementor-element-57c3527,
+    .cs-biopac .cs-content .elementor-element-a544e9c {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px 40px; margin-bottom: 36px;
+    }
+    .cs-biopac .cs-content .elementor-element-a544e9c { margin-bottom: 0; }
+    .cs-biopac .cs-content .elementor-element-64836b9,
+    .cs-biopac .cs-content .elementor-element-26de0d3,
+    .cs-biopac .cs-content .elementor-element-2b4db72,
+    .cs-biopac .cs-content .elementor-element-24b4486,
+    .cs-biopac .cs-content .elementor-element-05f529e {
+      box-sizing: border-box; text-align: center;
+    }
+    .cs-biopac .cs-content .elementor-element-64836b9 h3,
+    .cs-biopac .cs-content .elementor-element-26de0d3 h3,
+    .cs-biopac .cs-content .elementor-element-2b4db72 h3,
+    .cs-biopac .cs-content .elementor-element-24b4486 h3,
+    .cs-biopac .cs-content .elementor-element-05f529e h3 {
+      font-size: 20px; margin: 0 0 14px; padding-bottom: 14px;
+      border-bottom: 1px solid rgba(10,20,40,0.18);
+    }
+    .cs-biopac .cs-content .elementor-element-64836b9 .elementor-divider,
+    .cs-biopac .cs-content .elementor-element-26de0d3 .elementor-divider,
+    .cs-biopac .cs-content .elementor-element-2b4db72 .elementor-divider,
+    .cs-biopac .cs-content .elementor-element-24b4486 .elementor-divider,
+    .cs-biopac .cs-content .elementor-element-05f529e .elementor-divider {
+      display: none;
+    }
+    .cs-biopac .cs-content .elementor-element-64836b9 p,
+    .cs-biopac .cs-content .elementor-element-26de0d3 p,
+    .cs-biopac .cs-content .elementor-element-2b4db72 p,
+    .cs-biopac .cs-content .elementor-element-24b4486 p,
+    .cs-biopac .cs-content .elementor-element-05f529e p {
+      font-size: 15px; color: #444; margin: 0; line-height: 1.6;
+    }
+    @media (max-width: 900px) {
+      .cs-biopac .cs-content .elementor-element-3c1c7ce { padding: 32px 24px; }
+    }
+
+    /* ── Implementation timeline: slightly larger card gaps for premium
+       whitespace. ── */
+    .cs-biopac .cs-content .wpr-timeline-entry {
+      margin-bottom: 44px;
+    }
+
+    /* ── Results & Impact + Services: one continuous light-gray section with
+       a curved top (white→gray) and curved bottom (gray→white), matching
+       the reference. Results renders its accordion as dark "achievement
+       pills"; only the first (expanded) item shows its description text
+       below the pill with a −/+ icon, matching the reference exactly —
+       the rest stay pill-only with a + icon.
+
+       The reference bleeds this band the full browser width (the curve
+       meets the viewport edges, no white gutter) — it isn't boxed inside
+       the 1160px content column like every other biopac row. .cs-article's
+       overflow:hidden (used elsewhere to contain stray content overflow)
+       would clip that breakout, so it's relaxed to visible for biopac only.
+       Breaking out uses the standard "100vw + negative margin" trick: since
+       .cs-body-wrap is centered with symmetric left/right padding, 50% of
+       this element's own (padded-in) containing-block width minus 50vw
+       always equals the exact offset back to the viewport edge, regardless
+       of how deep the element is nested. ── */
+    .cs-biopac .cs-article { overflow: visible; }
+    .cs-biopac .cs-content .elementor-element-2a3f537 {
+      background: #eef0f2; border-radius: 50% 50% 0 0 / 70px 70px 0 0;
+      box-sizing: border-box; width: 100vw; max-width: 100vw;
+      margin: 24px calc(50% - 50vw) 0;
+      padding: 100px max(60px, calc((100vw - 1160px) / 2)) 56px;
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 .e-n-accordion-item { margin: 0 0 14px; }
+    .cs-biopac .cs-content .elementor-element-2a3f537 .e-n-accordion-item:last-child { margin-bottom: 0; }
+    .cs-biopac .cs-content .elementor-element-2a3f537 summary.e-n-accordion-item-title {
+      background: #1b1c1d; border-radius: 999px; padding: 18px 28px;
+      justify-content: center; gap: 10px; margin: 0;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 summary.e-n-accordion-item-title:hover {
+      background: #2e2f30; transform: scale(1.02);
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 .e-n-accordion-item-title-text {
+      color: #fff; font-size: 15px; text-align: center;
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 .e-n-accordion-item-title-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; flex-shrink: 0; order: -1;
+    }
+    /* Every <details> in the source WP HTML ships with open="" hardcoded —
+       Elementor's own JS (not loaded here) normally drives which one is
+       actually expanded at runtime. The old version of this CSS keyed
+       visibility off :first-child instead of the real [open] state, so
+       clicking a summary toggled the attribute natively but had zero
+       visual effect — only the first item could ever appear expanded.
+       Driving these rules off details[open] instead makes each item
+       genuinely reactive to clicks. Mutual exclusivity (only one open at a
+       time) and forcing every item but the first closed on load are handled
+       natively via the `name` attribute + a one-line script, see below. */
+    .cs-biopac .cs-content .elementor-element-2a3f537 .e-n-accordion-item-title-icon .e-opened,
+    .cs-biopac .cs-content .elementor-element-2a3f537 .e-n-accordion-item-title-icon .e-closed {
+      display: none; color: #5b9bff; font-size: 16px; font-weight: 700; line-height: 1;
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 details[open] .e-n-accordion-item-title-icon .e-opened {
+      display: inline;
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 details[open] .e-n-accordion-item-title-icon .e-opened::before { content: '−'; }
+    .cs-biopac .cs-content .elementor-element-2a3f537 details:not([open]) .e-n-accordion-item-title-icon .e-closed {
+      display: inline;
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 details:not([open]) .e-n-accordion-item-title-icon .e-closed::before { content: '+'; }
+    .cs-biopac .cs-content .elementor-element-2a3f537 details:not([open]) [role="region"] {
+      position: absolute; width: 1px; height: 1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap;
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 details[open] [role="region"] {
+      position: relative; width: auto; height: auto; overflow: visible;
+      clip: auto; white-space: normal; margin: 14px 0 0; padding: 0 28px;
+    }
+    .cs-biopac .cs-content .elementor-element-2a3f537 details[open] [role="region"] p {
+      font-size: 15px; color: #333; line-height: 1.6; margin: 0;
+    }
+
+    /* ══════════ BIOPAC — "Our Custom Software Development Services"
+       This block is excluded from every other case study (shared WP page
+       chrome), but biopac's reference design calls for it — included via
+       normalizeClient's includeServices flag. Continues the gray section
+       from Results above; restyle its heading + 2 buttons (top-right) +
+       6 service rows into a flat checklist (no cards), matching the
+       reference. ══════════ */
+    .cs-biopac .cs-content .elementor-element-6b4d231 {
+      background: #eef0f2; border-radius: 0 0 50% 50% / 0 0 70px 70px;
+      box-sizing: border-box; width: 100vw; max-width: 100vw;
+      margin: 0 calc(50% - 50vw);
+      padding: 0 max(60px, calc((100vw - 1160px) / 2)) 100px;
+    }
+    .cs-biopac .cs-content .elementor-element-503e2e9 {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 24px; flex-wrap: wrap; padding-top: 56px;
+    }
+    .cs-biopac .cs-content .elementor-element-037bea7 { flex: 1 1 420px; width: auto; min-width: 0; }
+    .cs-biopac .cs-content .elementor-element-8aadf52 {
+      display: flex; gap: 16px; margin: 6px 0 0; flex: 0 0 auto; width: auto;
+    }
+    /* The two button widgets are direct flex children of 8aadf52, but the
+       global reset gives every .elementor-element a forced width:100% —
+       with flex-basis:auto that width is used as each item's flex-basis,
+       so both buttons try to claim the full row and the second one
+       overflows (clipped by .cs-article's overflow:hidden). Override back
+       to natural content width so they sit side by side. */
+    .cs-biopac .cs-content .elementor-element-8aadf52 > .elementor-element {
+      width: auto; flex: 0 0 auto;
+    }
+    .cs-biopac .cs-content .elementor-element-8aadf52 a.elementor-button {
+      background: #F09300; color: #fff; font-size: 15px; font-weight: 600;
+      padding: 12px 26px; border-radius: 10px; margin: 0; white-space: nowrap;
+    }
+    .cs-biopac .cs-content .elementor-element-8aadf52 a.elementor-button:hover { background: #d98200; color: #fff; }
+    .cs-biopac .cs-content .elementor-element-8aadf52 .elementor-element-2e0d281 a.elementor-button {
+      background: #fff; color: #0154b1; border: 1.5px solid #0154b1;
+    }
+    .cs-biopac .cs-content .elementor-element-8aadf52 .elementor-element-2e0d281 a.elementor-button:hover { background: #f0f6ff; }
+    /* The 6 service rows are nested one level deeper than the wrapper this
+       was originally written against: fff8def > 0d8cb7b > [d6ef544,
+       062d331, 233d2e5, ddbbf76, 11c519d, f988483] (each holding a divider
+       + icon-box). 0d8cb7b is the real grid container — now a flat 2-col
+       checklist instead of a 3-col card grid. */
+    .cs-biopac .cs-content .elementor-element-0d8cb7b {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 56px; margin: 40px 0 0;
+    }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b > .elementor-element {
+      border-top: 1px solid rgba(10,20,40,0.16); padding: 24px 0;
+    }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b .elementor-icon-box-wrapper {
+      background: none; border-radius: 0; padding: 0; box-shadow: none; height: auto;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b .elementor-icon-box-icon {
+      width: 22px; height: 22px; margin: 2px 0 0; flex-shrink: 0;
+    }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b .elementor-icon-box-icon .elementor-icon {
+      display: block; width: 100%; height: 100%; background: #0154b1;
+      -webkit-mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/></svg>") center / contain no-repeat;
+      mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/></svg>") center / contain no-repeat;
+    }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b .elementor-icon-box-content { flex: 1; min-width: 0; }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b .elementor-icon-box-title { font-size: 18px; font-weight: 700; color: #0a0000; margin: 0 0 8px; }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b .elementor-icon-box-title span { font-weight: 700; }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b .elementor-icon-box-description { font-size: 14.5px; color: #5a6b7b; line-height: 1.6; }
+    .cs-biopac .cs-content .elementor-element-0d8cb7b .elementor-divider { display: none; }
+    @media (max-width: 900px) {
+      .cs-biopac .cs-content .elementor-element-503e2e9 { flex-direction: column; }
+      /* Match the 20px gutter the rest of the mobile layout uses (.cs-body-wrap
+         drops to 20px padding at this breakpoint — see the scoped style block). */
+      .cs-biopac .cs-content .elementor-element-2a3f537 {
+        padding-left: max(20px, calc((100vw - 1160px) / 2));
+        padding-right: max(20px, calc((100vw - 1160px) / 2));
+      }
+      .cs-biopac .cs-content .elementor-element-6b4d231 {
+        padding-left: max(20px, calc((100vw - 1160px) / 2));
+        padding-right: max(20px, calc((100vw - 1160px) / 2));
+      }
+    }
+
+    /* ── Mobile: stack everything BIOPAC turned into multi-column grids ──
+       (.cs-hero/.cs-body-wrap overrides live in the scoped style block
+       above instead — see the comment there for why.) */
+    @media (max-width: 900px) {
+      .cs-biopac .cs-content .elementor-element-57c3527,
+      .cs-biopac .cs-content .elementor-element-a544e9c,
+      .cs-biopac .cs-content .elementor-element-0d8cb7b {
+        grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px;
+      }
+      .cs-biopac .cs-content .elementor-element-8aadf52 { flex-direction: column; }
+    }
+    /* Phones: the Challenges 2×2 flip-card grid gets too narrow per card for
+       its title to fit (e.g. "Data Management" clipping) — stack to 1 column. */
+    @media (max-width: 600px) {
+      .cs-biopac .cs-content .elementor-element-1f5c71b,
+      .cs-biopac .cs-content .elementor-element-f52b3f5 {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 900px) {
       .cs-content, .cs-content p { font-size: 16px; }
       .cs-content h2 { font-size: 26px; margin: 36px 0 12px; }
@@ -944,12 +1595,28 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
             <a href="/">Home</a> &nbsp;›&nbsp; <a href="/our-clients/">Our Clients</a> &nbsp;›&nbsp; {client.title}
           </div>
           <h1>{client.tagline}</h1>
+          {client.heroIntro && <p class="cs-hero-intro">{client.heroIntro}</p>}
         </div>
         <div class="cs-hero-logo">
           <img src={client.logo} alt={`${client.title} logo`} loading="eager" decoding="async" />
         </div>
       </div>
     </div>
+
+    {slug === 'biopac' && (
+      <div class="cs-trust-strip">
+        <div class="cs-trust-inner">
+          <p class="cs-trust-label">Companies that trust our experienced team</p>
+          <div class="cs-trust-divider"></div>
+          <img
+            class="cs-trust-logos"
+            src="/biopac/logoswhite.webp"
+            alt="Hewlett Packard Enterprise, Riot Games, Allstate, Bank of America, Herbalife Nutrition, Rinnai"
+            loading="lazy" decoding="async"
+          />
+        </div>
+      </div>
+    )}
 
     <div class="cs-body-wrap">
       <aside class="cs-sidebar">
@@ -1045,7 +1712,9 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
       <section class="cs-other-stories">
         <div class="cs-other-inner">
           <h2>Some of Our Other Success Stories</h2>
-          <p>From custom theme development to SEO to PPC, we specialize in all areas to help you grow your sales online. With over 12 years of experience, we have a lot to talk about.</p>
+          <p>{slug === 'biopac'
+            ? "Explore more of our software success stories, where we've helped businesses innovate with seamless IoT integrations, user-friendly designs, and scalable solutions. From POS to smart devices, our expertise in custom software development has transformed ideas into impactful digital experiences."
+            : 'From custom theme development to SEO to PPC, we specialize in all areas to help you grow your sales online. With over 12 years of experience, we have a lot to talk about.'}</p>
           <div class="cs-other-grid">
             {otherClients.map((c) => (
               c.graphic ? (
@@ -1138,6 +1807,55 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-r
           return b && b.classList.contains('active');
         });
         show(start < 0 ? 0 : start);
+      });
+
+      // BIOPAC implementation timeline: grow the green centre line as the
+      // section scrolls through the viewport (the Royal widget's own JS isn't
+      // present, so the fill is driven here).
+      document.querySelectorAll('.cs-biopac .wpr-timeline-centered').forEach(function (tl) {
+        var line = tl.querySelector('.wpr-middle-line');
+        if (!line) return;
+        var entries = [].slice.call(tl.querySelectorAll('.wpr-timeline-entry'));
+        var ticking = false;
+        function render() {
+          ticking = false;
+          var r = tl.getBoundingClientRect();
+          var vh = window.innerHeight || document.documentElement.clientHeight;
+          // The fill tip tracks the vertical centre of the screen: the green
+          // line grows to exactly where the viewport middle crosses the
+          // timeline, so its end stays mid-screen as the user scrolls past.
+          var pct = ((vh * 0.5) - r.top) / r.height * 100;
+          pct = Math.max(0, Math.min(100, pct));
+          line.style.setProperty('--cs-tl-progress', pct + '%');
+          // light up each node once the green fill reaches its centre.
+          var fillPx = pct / 100 * line.offsetHeight;
+          entries.forEach(function (en) {
+            var center = en.offsetTop + en.offsetHeight / 2;
+            en.classList.toggle('cs-tl-active', fillPx >= center);
+          });
+        }
+        // rAF-throttle so the tip follows the scroll position with no lag.
+        function update() {
+          if (!ticking) { ticking = true; requestAnimationFrame(render); }
+        }
+        render();
+        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+      });
+
+      // BIOPAC "Results & Impact" accordion: the source WP HTML ships every
+      // <details> with open="" hardcoded (Elementor's own runtime JS, not
+      // loaded here, normally decides which one is actually expanded). Give
+      // each group a shared `name` so the browser enforces "only one open at
+      // a time" natively — no click handlers needed, native <details> toggle
+      // already works — then collapse every item but the first on load so
+      // the page starts in the same state as the reference design.
+      document.querySelectorAll('.cs-biopac .elementor-element-2a3f537 .e-n-accordion').forEach(function (acc, accIdx) {
+        var items = [].slice.call(acc.querySelectorAll(':scope > details.e-n-accordion-item'));
+        items.forEach(function (d, i) {
+          d.name = 'cs-biopac-results-accordion-' + accIdx;
+          if (i !== 0) d.removeAttribute('open');
+        });
       });
     })();
   </script>
