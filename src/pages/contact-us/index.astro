@@ -190,7 +190,7 @@ html { overflow-x: hidden; }
   .cu-hero-inner .cu-hero-title,
   .cu-hero-inner .cu-offices,
   .cu-hero-inner .cu-form-col { grid-column: auto; grid-row: auto; }
-  .cu-hero h1 { font-size: 38px; margin-bottom: 0; text-align: center; }
+  .cu-hero h1 { font-size: 42px; line-height: 1.32; margin-bottom: 0; text-align: center; }
   .cu-offices { text-align: center; margin-bottom: 0; }
   .cu-disclaimer { margin: 40px auto 0; }
 }
@@ -292,7 +292,7 @@ html { overflow-x: hidden; }
               }
             </div>
           </div>
-          <p class="tcard-body">{t.quote}</p>
+          <p class="tcard-body"><span class="tcard-body-clamp">{t.quote}</span></p>
           <div class="tcard-footer">
             <div>
               <div class="tcard-author">{t.author}</div>
@@ -308,7 +308,7 @@ html { overflow-x: hidden; }
           <div class="tcard-quote">❝❝</div>
           <div class="tcard-logo"><img src="/logos/Tausi.png" alt="Tausi" width="120" height="36" loading="lazy" /></div>
         </div>
-        <p class="tcard-body">I've been working with the Demski team for a while now on building my app, and so far, the experience has been excellent! They are communicative, knowledgeable, and truly dedicated to bringing my vision to life. Their expertise and support have made this process smooth, enjoyable and nothing short of exciting. I'm looking forward to the launch and seeing everything come together. Highly recommended!</p>
+        <p class="tcard-body"><span class="tcard-body-clamp">I've been working with the Demski team for a while now on building my app, and so far, the experience has been excellent! They are communicative, knowledgeable, and truly dedicated to bringing my vision to life. Their expertise and support have made this process smooth, enjoyable and nothing short of exciting. I'm looking forward to the launch and seeing everything come together. Highly recommended!</span></p>
         <div class="tcard-footer">
           <div>
             <div class="tcard-author">Regina DeBellis</div>
@@ -323,7 +323,7 @@ html { overflow-x: hidden; }
           <div class="tcard-quote">❝❝</div>
           <div class="tcard-logo"><img src="/logos/Zoomifi.png" alt="Zoomifi" width="120" height="36" loading="lazy" /></div>
         </div>
-        <p class="tcard-body">My company partnered with The Demski Group for mobile application development, and their work exceeded our expectations. Their professionalism, attention to detail, and quality are unmatched. They provided valuable infrastructure advice, maintained excellent communication, and quickly resolved any issues or bugs. We are confident in their expertise.</p>
+        <p class="tcard-body"><span class="tcard-body-clamp">My company partnered with The Demski Group for mobile application development, and their work exceeded our expectations. Their professionalism, attention to detail, and quality are unmatched. They provided valuable infrastructure advice, maintained excellent communication, and quickly resolved any issues or bugs. We are confident in their expertise.</span></p>
         <div class="tcard-footer">
           <div>
             <div class="tcard-author">Timilehin Bashorun</div>
@@ -338,7 +338,7 @@ html { overflow-x: hidden; }
           <div class="tcard-quote">❝❝</div>
           <div class="tcard-logo"><img src="/logos/BrandedAF.png" alt="Branded AF" width="120" height="36" loading="lazy" /></div>
         </div>
-        <p class="tcard-body">Working with The Demski Group has been an absolute pleasure! They are professional, highly skilled, and incredibly easy to work with. Throughout the development of my mobile app, they are always responsive, helpful, and willing to go the extra mile to ensure everything is perfect. I highly recommend them to anyone looking for a reliable and talented development team! I know I will be returning to them for future projects!</p>
+        <p class="tcard-body"><span class="tcard-body-clamp">Working with The Demski Group has been an absolute pleasure! They are professional, highly skilled, and incredibly easy to work with. Throughout the development of my mobile app, they are always responsive, helpful, and willing to go the extra mile to ensure everything is perfect. I highly recommend them to anyone looking for a reliable and talented development team! I know I will be returning to them for future projects!</span></p>
         <div class="tcard-footer">
           <div>
             <div class="tcard-author">Kody Smith</div>
@@ -353,7 +353,7 @@ html { overflow-x: hidden; }
           <div class="tcard-quote">❝❝</div>
           <div class="tcard-logo"><img src="/logos/ImpactTennis.png" alt="Impact Team Tennis" width="120" height="36" loading="lazy" /></div>
         </div>
-        <p class="tcard-body">The Demski Group is great to work with! They inherited a mess with our platform and have been able to fix the bugs and make the platform more user friendly. Their professionalism and attention to detail are unmatched.</p>
+        <p class="tcard-body"><span class="tcard-body-clamp">The Demski Group is great to work with! They inherited a mess with our platform and have been able to fix the bugs and make the platform more user friendly. Their professionalism and attention to detail are unmatched.</span></p>
         <div class="tcard-footer">
           <div>
             <div class="tcard-author">Delaine Mast</div>
@@ -473,6 +473,7 @@ html { overflow-x: hidden; }
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 1px 6px rgba(0,0,0,0.10), 0 0 2px rgba(0,0,0,0.06);
   transition: box-shadow 0.25s ease;
 }
@@ -510,11 +511,19 @@ html { overflow-x: hidden; }
   max-width: 150px;
 }
 .tcard-body {
+  flex: 1;
+  margin-bottom: 18px;
+  overflow: hidden;
+  min-height: 0;
+}
+.tcard-body-clamp {
   font-size: 15px;
   color: #333;
   line-height: 1.72;
-  flex: 1;
-  margin-bottom: 18px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
 }
 .tcard-footer {
   display: flex;
@@ -569,9 +578,9 @@ html { overflow-x: hidden; }
   .clients-right { padding: 40px 24px; background: #fff; }
   .clients-right h2 { font-size: 30px; }
   .testimonial-slider-wrap { margin-top: 0; }
-  .testimonial-slider { padding: 20px 20px; }
+  .testimonial-slider { padding: 20px 0; }
   .testimonial-card-new { flex: 0 0 100%; width: 100%; }
-  .tslider-clip { margin: 0 32px; }
+  .tslider-clip { margin: 0 26px; }
   .slider-btn { display: flex; width: 36px; height: 36px; font-size: 14px; }
   .slider-btn-prev { left: 0; }
   .slider-btn-next { right: 0; }
