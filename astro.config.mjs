@@ -1,4 +1,4 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, sessionDrivers } from 'astro/config';
 import node from '@astrojs/node';
 
 export default defineConfig({
@@ -6,6 +6,14 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone',
   }),
+  // Nothing in this site uses Astro.session, but @astrojs/node auto-enables
+  // a filesystem-backed session store whenever session.driver is unset. AWS
+  // Amplify's compute bundle is deployed read-only (except /tmp), so any
+  // request touching that store crashes with a 500. Force an in-memory
+  // driver so it never tries to write to disk.
+  session: {
+    driver: sessionDrivers.memory(),
+  },
   compressHTML: true,
   redirects: {
     '/services/cross-platform/': '/technologies/hybrid/',
