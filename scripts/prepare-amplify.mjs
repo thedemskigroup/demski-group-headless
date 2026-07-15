@@ -21,8 +21,18 @@ mkdirSync(STATIC_DIR, { recursive: true });
 console.log('[prepare-amplify] Copying client assets -> static/');
 cpSync(join(root, 'dist', 'client'), STATIC_DIR, { recursive: true });
 
-console.log('[prepare-amplify] Copying server bundle -> compute/default/');
-cpSync(join(root, 'dist', 'server'), COMPUTE_DIR, { recursive: true });
+// @astrojs/node's standalone server locates the client-assets folder AT
+// STARTUP by walking up from its own chunk's file path until it finds a
+// directory literally named "server", then uses that directory's sibling
+// "client". If the bundle doesn't preserve Astro's dist/server + dist/client
+// sibling layout, the process throws before it ever listens on port 3000 —
+// which Amplify surfaces as an opaque HTTP 500 on every request. So the
+// compute bundle must contain server/ and client/ as siblings, with the
+// wrapper entrypoint importing ./server/entry.mjs.
+console.log('[prepare-amplify] Copying server bundle -> compute/default/server/');
+cpSync(join(root, 'dist', 'server'), join(COMPUTE_DIR, 'server'), { recursive: true });
+console.log('[prepare-amplify] Copying client assets -> compute/default/client/');
+cpSync(join(root, 'dist', 'client'), join(COMPUTE_DIR, 'client'), { recursive: true });
 
 // Astro's node-standalone entry defaults to PORT=8080; Amplify's compute
 // primitive requires the entry point to listen on port 3000.
@@ -32,7 +42,11 @@ writeFileSync(
   [
     "process.env.HOST = process.env.HOST || '0.0.0.0';",
     "process.env.PORT = process.env.PORT || '3000';",
-    "await import('./entry.mjs');",
+    '// Surface fatal errors in Amplify Hosting compute logs instead of dying',
+    '// silently — a crashed process otherwise shows up only as an opaque 500.',
+    "process.on('uncaughtException', (err) => { console.error('[server] Uncaught exception:', err); });",
+    "process.on('unhandledRejection', (err) => { console.error('[server] Unhandled rejection:', err); });",
+    "await import('./server/entry.mjs');",
     '',
   ].join('\n')
 );
