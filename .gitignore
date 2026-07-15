@@ -30,3 +30,7 @@ dist/
 node_modules/
 .astro/
 .amplify-hosting/
+
+# local QA screenshots — never deploy
+.qa-*.png
+_qa_*.png
