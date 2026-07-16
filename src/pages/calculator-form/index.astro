@@ -460,7 +460,7 @@ const priorities = [
   <span class="cf-hint" id="cfHint">or press ENTER</span>
 </div>
 
-<script is:inline define:vars={{ serviceId: 'service_f4tf0yn', leadTemplate: 'template_c6hi8ir' }}>
+<script is:inline define:vars={{ leadEndpoint: 'https://main.d13spywfxx47ns.amplifyapp.com/api/send-lead' }}>
 (function () {
   var steps = Array.from(document.querySelectorAll('.cf-step'));
   var dots = Array.from(document.querySelectorAll('.cf-dot'));
@@ -609,16 +609,26 @@ const priorities = [
       return k + ': ' + (Array.isArray(v) ? v.join(', ') : v);
     }).join('\n');
 
-    if (typeof emailjs !== 'undefined') {
-      emailjs.send(serviceId, leadTemplate, {
-        user_name: data.name,
-        user_company: data.company,
-        user_email: data.email,
-        user_phone: data.phone,
-        project_description: data.description,
-        quiz_answers: summary,
-      }).catch(function () {});
-    }
+    // Fold the project description and the quiz answers into project_notes —
+    // the shared /api/send-lead schema has no dedicated fields for them.
+    var projectNotes = [
+      data.description || '',
+      summary ? 'Calculator answers:\n' + summary : ''
+    ].filter(Boolean).join('\n\n');
+    fetch(leadEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        company: data.company,
+        project_notes: projectNotes,
+        cta_choice: 'Software Cost Calculator',
+        page: location.pathname,
+        page_name: document.title
+      })
+    }).catch(function () {});
 
     document.getElementById('cfContactForm').style.display = 'none';
     document.getElementById('cfStep7Heading').style.display = 'none';
