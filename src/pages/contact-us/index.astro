@@ -678,10 +678,12 @@ html { overflow-x: hidden; }
 })();
 </script>
 
-<script is:inline define:vars={{ serviceId: 'service_f4tf0yn', leadTemplate: 'template_c6hi8ir', confirmTemplate: 'template_7kz7hgj' }}>
+<script is:inline define:vars={{ leadEndpoint: 'https://main.d13spywfxx47ns.amplifyapp.com/api/send-lead' }}>
 (function () {
   const form = document.getElementById('cu-form');
   if (!form) return;
+  const SUCCESS_HTML = '<p style="font-family:\'Outfit\',sans-serif;color:#1a1a1a;font-size:17px;">Thanks! One of our experts will reach out shortly.</p>';
+  const ERROR_HTML = '<p style="font-family:\'Outfit\',sans-serif;color:#1a1a1a;font-size:17px;">Sorry, something went wrong sending your request. Please call us at 406-936-3049 or email contact@demskigroup.com and we\'ll take care of you right away.</p>';
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     const name = form.querySelector('input[name="name"]').value.trim();
@@ -695,16 +697,34 @@ html { overflow-x: hidden; }
       emailInput.reportValidity();
       return;
     }
-    if (typeof emailjs === 'undefined') {
-      window.location.href = '/contact-us/?' + new URLSearchParams({ name, email, phone, company, website, message }).toString();
-      return;
-    }
     const submitBtn = form.querySelector('.cu-form-submit');
     if (submitBtn) submitBtn.disabled = true;
-    const params = { user_name: name, user_email: email, user_phone: phone, user_company: company, user_website: website, user_message: message, cta_choice: 'Schedule a Free Consultation' };
-    emailjs.send(serviceId, leadTemplate, params).catch(() => {});
-    emailjs.send(serviceId, confirmTemplate, { user_name: name, user_email: email, cta_choice: 'Schedule a Free Consultation' }).catch(() => {});
-    form.innerHTML = '<p style="font-family:\'Outfit\',sans-serif;color:#1a1a1a;font-size:17px;">Thanks! One of our experts will reach out shortly.</p>';
+    // Fold the "Website" field into project_notes so nothing is lost — the
+    // shared /api/send-lead lead schema has no dedicated website field.
+    const projectNotes = [website ? 'Website: ' + website : '', message].filter(Boolean).join('\n\n');
+    const payload = {
+      name: name,
+      email: email,
+      phone: phone,
+      company: company,
+      project_notes: projectNotes,
+      cta_choice: 'Schedule a Free Consultation',
+      page: '/contact-us/',
+      page_name: 'Contact Us'
+    };
+    fetch(leadEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok || !data.ok) throw new Error('send-lead ' + res.status);
+        form.innerHTML = SUCCESS_HTML;
+      });
+    }).catch(function () {
+      if (submitBtn) submitBtn.disabled = false;
+      form.innerHTML = ERROR_HTML;
+    });
   });
 })();
 </script>
