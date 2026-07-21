@@ -81,7 +81,8 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-r
   title="The Demski Group | Custom Software Development Company"
   description="The Demski Group builds fully custom software, mobile apps, CRM systems, and web applications for businesses across the US. 12+ years, 600+ projects. Schedule a free consultation."
 >
-<!-- Preload hero background image (LCP resource) -->
+<!-- Preload hero background image (LCP resource) — separate images for mobile vs desktop -->
+<link rel="preload" href="/hero-bg-mobile.jpg" as="image" media="(max-width: 768px)" slot="head" />
 <link rel="preload" href="/hero-bg.jpg" as="image" media="(min-width: 769px)" slot="head" />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" slot="head" />
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin slot="head" />
@@ -120,6 +121,15 @@ html, body { overflow-x: hidden; }
   background-attachment: scroll, fixed;
   background-repeat: no-repeat, no-repeat;
   padding: 47px 0 70px;
+}
+/* Mobile hero: use 80KB variant instead of the 453KB desktop version */
+@media (max-width: 768px) {
+  .hero {
+    background-image:
+      url('/Path-1387.png'),
+      url('/hero-bg-mobile.jpg');
+    background-attachment: scroll, scroll;
+  }
 }
 .hero-overlay {
   position: absolute;
