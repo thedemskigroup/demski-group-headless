@@ -23,7 +23,7 @@ export default defineConfig({
     enabled: false,
   },
   build: {
-    inlineStylesheets: 'never',
+    inlineStylesheets: 'auto',
   },
   vite: {
     build: {
