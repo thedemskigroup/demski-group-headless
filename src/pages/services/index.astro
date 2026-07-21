@@ -3,24 +3,24 @@ import Layout from '../../layouts/Layout.astro';
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=3600');
 
 const KNOWN_IMAGES: Record<string,string> = {
-  'biopac':'https://demskigroup.com/wp-content/uploads/2024/07/Biopac.png',
-  'shop-orthopedics':'https://demskigroup.com/wp-content/uploads/2024/06/ShopOrthopedics-1.png',
-  'property-gauge':'https://demskigroup.com/wp-content/uploads/2024/07/PropertyGauge.png',
-  'mister-quik':'https://demskigroup.com/wp-content/uploads/2024/07/mrquick.png',
-  'pnc-bank':'https://demskigroup.com/wp-content/uploads/2024/06/company-logo-4.png',
-  'jackson-hewitt':'https://demskigroup.com/wp-content/uploads/2024/06/jacksonhewitt-1.png',
-  'zoomifi':'https://demskigroup.com/wp-content/uploads/2024/06/Zoomifi-1.png',
-  'corning-glass':'https://demskigroup.com/wp-content/uploads/2024/07/corning-300x201-1.png',
-  'flower-moxie-case-study':'https://demskigroup.com/wp-content/uploads/2024/07/Flowermoxie.png',
-  'golf-daddy':'https://demskigroup.com/wp-content/uploads/2024/07/Branded-300x159.png',
-  'audiojack':'https://demskigroup.com/wp-content/uploads/2024/06/audiojackhighres-300x159.png',
-  'willo':'https://demskigroup.com/wp-content/uploads/2024/07/Willo-1.png',
-  'impact-team-tennis':'https://demskigroup.com/wp-content/uploads/2025/02/ITTLogo-300x159.png',
-  'bite':'https://demskigroup.com/wp-content/uploads/2024/08/newbitelogo.png',
-  'hewlett-packard-enterprise':'https://demskigroup.com/wp-content/uploads/2024/07/HP-1.png',
-  'farmers-daughter-fibers':'https://demskigroup.com/wp-content/uploads/2024/07/FarmersDaughter.png',
-  'tausi-brands':'https://demskigroup.com/wp-content/uploads/2024/06/Tausi-1.png',
-  'nu-borders':'https://demskigroup.com/wp-content/uploads/2024/07/Nuborders.png',
+  'biopac':'/wp-content/uploads/2024/07/Biopac.png',
+  'shop-orthopedics':'/wp-content/uploads/2024/06/ShopOrthopedics-1.png',
+  'property-gauge':'/wp-content/uploads/2024/07/PropertyGauge.png',
+  'mister-quik':'/wp-content/uploads/2024/07/mrquick.png',
+  'pnc-bank':'/wp-content/uploads/2024/06/company-logo-4.png',
+  'jackson-hewitt':'/wp-content/uploads/2024/06/jacksonhewitt-1.png',
+  'zoomifi':'/wp-content/uploads/2024/06/Zoomifi-1.png',
+  'corning-glass':'/wp-content/uploads/2024/07/corning-300x201-1.png',
+  'flower-moxie-case-study':'/wp-content/uploads/2024/07/Flowermoxie.png',
+  'golf-daddy':'/wp-content/uploads/2024/07/Branded-300x159.png',
+  'audiojack':'/wp-content/uploads/2024/06/audiojackhighres-300x159.png',
+  'willo':'/wp-content/uploads/2024/07/Willo-1.png',
+  'impact-team-tennis':'/wp-content/uploads/2025/02/ITTLogo-300x159.png',
+  'bite':'/wp-content/uploads/2024/08/newbitelogo.png',
+  'hewlett-packard-enterprise':'/wp-content/uploads/2024/07/HP-1.png',
+  'farmers-daughter-fibers':'/wp-content/uploads/2024/07/FarmersDaughter.png',
+  'tausi-brands':'/wp-content/uploads/2024/06/Tausi-1.png',
+  'nu-borders':'/wp-content/uploads/2024/07/Nuborders.png',
 };
 
 function clean(s: string) {
@@ -1369,15 +1369,15 @@ h1, h2, h3, h4, h5, h6 {
       <a href="/technologies/" class="btn-outline">See all technologies <span class="btn-arrow-icon"></span></a>
     </div>
     <div class="tech-logo-grid">
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/05/react.png" alt="React" width="64" height="64" loading="lazy" decoding="async" /></div>
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/05/Layer-2.png" alt="Swift" width="64" height="64" loading="lazy" decoding="async" /></div>
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/05/nodejs.png" alt="Node.js" width="64" height="64" loading="lazy" decoding="async" /></div>
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/07/PHP.png" alt="PHP" width="64" height="64" loading="lazy" decoding="async" /></div>
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/05/net.png" alt=".NET Core" style="filter: grayscale(100%) !important;" width="64" height="64" loading="lazy" decoding="async" /></div>
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/07/kotlin.png" alt="Kotlin" width="64" height="64" loading="lazy" decoding="async" /></div>
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/05/go.png" alt="Go" width="64" height="64" loading="lazy" decoding="async" /></div>
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/05/java.png" alt="Java" width="64" height="64" loading="lazy" decoding="async" /></div>
-      <div class="tech-logo-item"><img src="https://demskigroup.com/wp-content/uploads/2024/05/Python-Logo.png" alt="Python" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/05/react.png" alt="React" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/05/Layer-2.png" alt="Swift" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/05/nodejs.png" alt="Node.js" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/07/PHP.png" alt="PHP" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/05/net.png" alt=".NET Core" style="filter: grayscale(100%) !important;" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/07/kotlin.png" alt="Kotlin" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/05/go.png" alt="Go" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/05/java.png" alt="Java" width="64" height="64" loading="lazy" decoding="async" /></div>
+      <div class="tech-logo-item"><img src="/wp-content/uploads/2024/05/Python-Logo.png" alt="Python" width="64" height="64" loading="lazy" decoding="async" /></div>
     </div>
   </div>
 </section>
@@ -1489,7 +1489,7 @@ h1, h2, h3, h4, h5, h6 {
   <div class="svc-pos-inner">
     <div class="svc-pos-img">
       <img
-        src="https://demskigroup.com/wp-content/uploads/2024/06/programmers-developing-software-in-team-2023-11-27-05-25-31-utc-1024x683.jpg"
+        src="/wp-content/uploads/2024/06/programmers-developing-software-in-team-2023-11-27-05-25-31-utc-1024x683.jpg"
         alt="Programmers developing software"
         width="1024" height="683"
         loading="lazy"
@@ -1520,7 +1520,7 @@ h1, h2, h3, h4, h5, h6 {
       <a class="method-card" href="/methodologies/">
         <div class="method-card-inner">
           <div class="method-card-front">
-            <div class="method-card-bg" style="background-image: url('https://demskigroup.com/wp-content/uploads/2025/02/Tech3-768x512.jpg')"></div>
+            <div class="method-card-bg" style="background-image: url('/wp-content/uploads/2025/02/Tech3-768x512.jpg')"></div>
             <div class="method-card-front-content">
               <span class="method-default-arrow"></span>
               <span class="method-default-name">Agile</span>
@@ -1536,7 +1536,7 @@ h1, h2, h3, h4, h5, h6 {
       <a class="method-card" href="/methodologies/">
         <div class="method-card-inner">
           <div class="method-card-front">
-            <div class="method-card-bg" style="background-image: url('https://demskigroup.com/wp-content/uploads/2025/02/Blue-Abstract-Background-1-768x432.jpg')"></div>
+            <div class="method-card-bg" style="background-image: url('/wp-content/uploads/2025/02/Blue-Abstract-Background-1-768x432.jpg')"></div>
             <div class="method-card-front-content">
               <span class="method-default-arrow"></span>
               <span class="method-default-name">DevOps</span>
@@ -1552,7 +1552,7 @@ h1, h2, h3, h4, h5, h6 {
       <a class="method-card" href="/methodologies/">
         <div class="method-card-inner">
           <div class="method-card-front">
-            <div class="method-card-bg" style="background-image: url('https://demskigroup.com/wp-content/uploads/2025/02/Tech2-300x200.jpg')"></div>
+            <div class="method-card-bg" style="background-image: url('/wp-content/uploads/2025/02/Tech2-300x200.jpg')"></div>
             <div class="method-card-front-content">
               <span class="method-default-arrow"></span>
               <span class="method-default-name">RAD</span>

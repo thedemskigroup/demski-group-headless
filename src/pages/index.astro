@@ -84,13 +84,14 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-r
 <!-- Preload hero background image (LCP resource) -->
 <link rel="preload" href="/hero-bg.jpg" as="image" media="(min-width: 769px)" slot="head" />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" slot="head" />
-<link rel="preconnect" href="https://api.fontshare.com" slot="head" />
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin slot="head" />
+<link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=general-sans@700,600,500,400&display=swap" slot="head" />
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@700,600,500,400&display=swap" slot="head" />
 <!-- AOS CSS loaded non-blocking -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" media="print" onload="this.media='all'" slot="head" />
 <!-- noscript fallback for AOS (rendered inline, not in head slot) -->
 <style slot="head">
-@import url('https://api.fontshare.com/v2/css?f[]=general-sans@700,600,500,400&display=swap');
-/* font-display:swap is applied via the URL param above (fontshare honurs it) */
+/* font-display:swap is applied via the fontshare URL param above */
 
 /* AOS override — keep animations subtle */
 [data-aos] { pointer-events: none; }
@@ -1841,7 +1842,7 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
   <div class="clients-top">
     <div class="clients-left">
       <img
-        src="https://demskigroup.com/wp-content/uploads/2024/06/two-coworkers-using-ipad-smiling-scaled.jpg"
+        src="/wp-content/uploads/2024/06/two-coworkers-using-ipad-smiling-scaled.jpg"
         alt="Two coworkers using iPad smiling"
         width="600" height="800"
         loading="lazy"
@@ -1945,7 +1946,7 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
       <div class="testimonial-card-new">
         <div class="tcard-top">
           <div class="tcard-quote">❝❝</div>
-          <div class="tcard-logo"><img src="https://demskigroup.com/wp-content/uploads/2024/07/Companylogo3-300x159.png" alt="Biopac" width="120" height="36" loading="lazy" /></div>
+          <div class="tcard-logo"><img src="/wp-content/uploads/2024/07/Companylogo3-300x159.png" alt="Biopac" width="120" height="36" loading="lazy" /></div>
         </div>
         <p class="tcard-body">We spoke to a few different companies as we set out to find someone to create a website/database application. We chose The Demski Group in part because we found them very easy to talk to. That first impression stuck as we have a great relationship with them now. We are not even considering looking for anyone else.</p>
         <div class="tcard-footer">
@@ -2660,7 +2661,7 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
     </div>
     <div class="final-cta-image">
       <img
-        src="https://demskigroup.com/wp-content/uploads/2024/06/cropped-shot-of-a-group-of-creatives-having-a-meet-2023-11-27-04-53-10-utc-1.jpg"
+        src="/wp-content/uploads/2024/06/cropped-shot-of-a-group-of-creatives-having-a-meet-2023-11-27-04-53-10-utc-1.jpg"
         alt="Team meeting"
         width="926" height="375"
         loading="lazy"

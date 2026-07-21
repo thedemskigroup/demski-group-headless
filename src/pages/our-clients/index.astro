@@ -17,33 +17,33 @@ function extractPhoto(item: any) {
 }
 
 const KNOWN_IMAGES: Record<string,string> = {
-  'biopac':'https://demskigroup.com/wp-content/uploads/2024/07/Biopac.png',
-  'shop-orthopedics':'https://demskigroup.com/wp-content/uploads/2024/06/ShopOrthopedics-1.png',
-  'property-gauge':'https://demskigroup.com/wp-content/uploads/2024/07/PropertyGauge.png',
-  'mister-quik':'https://demskigroup.com/wp-content/uploads/2024/07/mrquick.png',
-  'pnc-bank':'https://demskigroup.com/wp-content/uploads/2024/06/company-logo-4.png',
-  'jackson-hewitt':'https://demskigroup.com/wp-content/uploads/2024/06/jacksonhewitt-1.png',
-  'seen-dating':'https://demskigroup.com/wp-content/uploads/2024/06/SEENDating-1.png',
-  'nu-borders':'https://demskigroup.com/wp-content/uploads/2024/07/Nuborders.png',
-  'robomaster':'https://demskigroup.com/wp-content/uploads/2024/06/Robomaster-1.png',
-  'zoomifi':'https://demskigroup.com/wp-content/uploads/2024/06/Zoomifi-1.png',
-  'yawye':'https://demskigroup.com/wp-content/uploads/2024/06/Yawye-1.png',
-  'tausi-brands':'https://demskigroup.com/wp-content/uploads/2024/06/Tausi-1.png',
-  'corning-glass':'https://demskigroup.com/wp-content/uploads/2024/07/corning-300x201-1.png',
-  'flower-moxie-case-study':'https://demskigroup.com/wp-content/uploads/2024/07/Flowermoxie.png',
-  'golf-daddy':'https://demskigroup.com/wp-content/uploads/2024/07/Branded-300x159.png',
-  'audiojack':'https://demskigroup.com/wp-content/uploads/2024/06/audiojackhighres-300x159.png',
-  'willo':'https://demskigroup.com/wp-content/uploads/2024/07/Willo-1.png',
-  'impact-team-tennis':'https://demskigroup.com/wp-content/uploads/2025/02/ITTLogo-300x159.png',
-  'bite':'https://demskigroup.com/wp-content/uploads/2024/08/newbitelogo.png',
-  'hewlett-packard-enterprise':'https://demskigroup.com/wp-content/uploads/2024/07/HP-1.png',
-  'farmers-daughter-fibers':'https://demskigroup.com/wp-content/uploads/2024/07/FarmersDaughter.png',
+  'biopac':'/wp-content/uploads/2024/07/Biopac.png',
+  'shop-orthopedics':'/wp-content/uploads/2024/06/ShopOrthopedics-1.png',
+  'property-gauge':'/wp-content/uploads/2024/07/PropertyGauge.png',
+  'mister-quik':'/wp-content/uploads/2024/07/mrquick.png',
+  'pnc-bank':'/wp-content/uploads/2024/06/company-logo-4.png',
+  'jackson-hewitt':'/wp-content/uploads/2024/06/jacksonhewitt-1.png',
+  'seen-dating':'/wp-content/uploads/2024/06/SEENDating-1.png',
+  'nu-borders':'/wp-content/uploads/2024/07/Nuborders.png',
+  'robomaster':'/wp-content/uploads/2024/06/Robomaster-1.png',
+  'zoomifi':'/wp-content/uploads/2024/06/Zoomifi-1.png',
+  'yawye':'/wp-content/uploads/2024/06/Yawye-1.png',
+  'tausi-brands':'/wp-content/uploads/2024/06/Tausi-1.png',
+  'corning-glass':'/wp-content/uploads/2024/07/corning-300x201-1.png',
+  'flower-moxie-case-study':'/wp-content/uploads/2024/07/Flowermoxie.png',
+  'golf-daddy':'/wp-content/uploads/2024/07/Branded-300x159.png',
+  'audiojack':'/wp-content/uploads/2024/06/audiojackhighres-300x159.png',
+  'willo':'/wp-content/uploads/2024/07/Willo-1.png',
+  'impact-team-tennis':'/wp-content/uploads/2025/02/ITTLogo-300x159.png',
+  'bite':'/wp-content/uploads/2024/08/newbitelogo.png',
+  'hewlett-packard-enterprise':'/wp-content/uploads/2024/07/HP-1.png',
+  'farmers-daughter-fibers':'/wp-content/uploads/2024/07/FarmersDaughter.png',
 };
 
 const HERO_CARDS = [
-  { name:'Hewlett Packard Enterprise', link:'/our-clients/hewlett-packard-enterprise/', photo:'https://demskigroup.com/wp-content/uploads/2024/05/group-of-people-working.jpg' },
-  { name:'Willo',                      link:'/our-clients/willo/',                      photo:'https://demskigroup.com/wp-content/uploads/2024/07/Willo-1.png' },
-  { name:"Farmer's Daughter Fibers",   link:'/our-clients/farmers-daughter-fibers/',    photo:'https://demskigroup.com/wp-content/uploads/2024/07/FarmersDaughter.png' },
+  { name:'Hewlett Packard Enterprise', link:'/our-clients/hewlett-packard-enterprise/', photo:'/wp-content/uploads/2024/05/group-of-people-working.jpg' },
+  { name:'Willo',                      link:'/our-clients/willo/',                      photo:'/wp-content/uploads/2024/07/Willo-1.png' },
+  { name:"Farmer's Daughter Fibers",   link:'/our-clients/farmers-daughter-fibers/',    photo:'/wp-content/uploads/2024/07/FarmersDaughter.png' },
 ];
 
 // Static fallback grid, sourced from CLIENT_FALLBACKS, used whenever the
@@ -96,8 +96,10 @@ const biopacPhoto = biopac?.photo || KNOWN_IMAGES[biopac?.slug] || '';
   title="Our Clients | The Demski Group"
   description="Explore The Demski Group's client portfolio — from Fortune 500 companies like HP and PNC Bank to innovative startups. See how we've helped businesses grow with custom software."
 >
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin slot="head" />
+<link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=general-sans@700,600,500,400&display=swap" slot="head" />
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@700,600,500,400&display=swap" slot="head" />
 <style is:global>
-@import url('https://api.fontshare.com/v2/css?f[]=general-sans@700,600,500,400&display=swap');
 html { overflow-x: hidden; }
 
 /* ══ HERO ══ */
@@ -438,7 +440,7 @@ html { overflow-x: hidden; }
       </div>
     </div>
     <div class="clients-cta-image">
-      <img src="https://demskigroup.com/wp-content/uploads/2024/06/cropped-shot-of-a-group-of-creatives-having-a-meet-2023-11-27-04-53-10-utc-1.jpg" alt="Team meeting" width="926" height="375" loading="lazy" />
+      <img src="/wp-content/uploads/2024/06/cropped-shot-of-a-group-of-creatives-having-a-meet-2023-11-27-04-53-10-utc-1.jpg" alt="Team meeting" width="926" height="375" loading="lazy" />
     </div>
   </div>
 </section>

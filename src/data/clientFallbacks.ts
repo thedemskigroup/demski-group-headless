@@ -77,7 +77,7 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     industries: ['E-commerce', 'Healthcare'],
     techStack: ['Shopify', 'Liquid', 'JavaScript', 'CSS'],
     logo: '/logos/BrandedAF.png',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/06/ShopOrthopedics-1.png',
+    screenshot: '/wp-content/uploads/2024/06/ShopOrthopedics-1.png',
     project: 'ShopOrthopedics, an online retailer of orthopedic braces and supports, needed a better Shopify shopping experience to help customers find the right products faster and convert more visitors into buyers.',
     solution: 'The Demski Group implemented high-quality, custom Shopify solutions — improving product categorization, search, and the overall storefront experience to make shopping faster and more intuitive.',
     features: [
@@ -101,8 +101,8 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     tagline: 'Streamlining Property Analysis with Custom Tools.',
     industries: ['PropTech'],
     techStack: ['React', 'Node.js', 'PostgreSQL'],
-    logo: 'https://demskigroup.com/wp-content/uploads/2024/07/PropertyGauge.png',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/07/PropertyGauge.png',
+    logo: '/wp-content/uploads/2024/07/PropertyGauge.png',
+    screenshot: '/wp-content/uploads/2024/07/PropertyGauge.png',
     project: 'Property Gauge needed custom software to help its team analyze and manage properties more efficiently, replacing time-consuming manual processes with a streamlined digital workflow.',
     solution: 'The Demski Group designed and built custom software tools that automate property analysis tasks, giving the Property Gauge team a faster, more reliable way to manage their portfolio.',
     features: [
@@ -123,8 +123,8 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     tagline: 'Reliable Custom Development for Financial Services.',
     industries: ['Financial Services'],
     techStack: ['.NET', 'SQL Server', 'Azure'],
-    logo: 'https://demskigroup.com/wp-content/uploads/2024/06/company-logo-4.png',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/06/company-logo-4.png',
+    logo: '/wp-content/uploads/2024/06/company-logo-4.png',
+    screenshot: '/wp-content/uploads/2024/06/company-logo-4.png',
     project: 'A major financial services brand needed custom software development and consulting support that could meet the high standards required for systems handling sensitive financial data.',
     solution: 'The Demski Group provided custom development and consulting services, delivering reliable, well-tested solutions built to the rigorous standards expected in the financial services industry.',
     features: [
@@ -145,7 +145,7 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     industries: ['Home Services'],
     techStack: ['WordPress', 'PHP', 'JavaScript', 'SEO'],
     logo: '/Logo3-768x137.webp',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/07/mrquick.png',
+    screenshot: '/wp-content/uploads/2024/07/mrquick.png',
     project: 'Mister Quik Home Services needed a development partner who could take on large website projects, deliver under tight deadlines, and remain honest and transparent throughout.',
     solution: 'The Demski Group has worked with Mister Quik on multiple large website development projects, delivering reliable, on-time work without cutting corners and staying responsive whenever the team needs help.',
     features: [
@@ -168,7 +168,7 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     industries: ['Financial Services'],
     techStack: ['PHP', 'MySQL', 'JavaScript'],
     logo: '/Logo3-768x137.webp',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/06/jacksonhewitt-1.png',
+    screenshot: '/wp-content/uploads/2024/06/jacksonhewitt-1.png',
     project: 'One of the nation\'s largest tax preparation companies needed custom development support to keep digital operations running smoothly through high-demand periods.',
     solution: 'The Demski Group provided custom software development services that supported Jackson Hewitt\'s digital operations, delivering high-quality work on time and within budget.',
     features: [
@@ -189,7 +189,7 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     industries: ['Mobile Apps', 'Social'],
     techStack: ['React Native', 'Node.js', 'Firebase'],
     logo: '/logos/SEEN.png',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/06/SEENDating-1.png',
+    screenshot: '/wp-content/uploads/2024/06/SEENDating-1.png',
     project: 'SEEN Dating needed an app development partner who could continually evolve the product to increase user engagement and retention as the startup\'s needs changed.',
     solution: 'The Demski Group continues to evolve the SEEN Dating app, staying available across multiple communication channels to weigh in on the product and pivot quickly when priorities shift.',
     features: [
@@ -211,8 +211,8 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     tagline: 'A Smart IoT Toothbrush That Makes Kids’ Brushing Fun.',
     industries: ['IoT', 'Consumer Health'],
     techStack: ['Kotlin', 'Swift', 'Node.js', 'AWS'],
-    logo: 'https://demskigroup.com/wp-content/uploads/2024/07/Willo-1.png',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/07/Willo-1.png',
+    logo: '/wp-content/uploads/2024/07/Willo-1.png',
+    screenshot: '/wp-content/uploads/2024/07/Willo-1.png',
     project: 'Willo needed a development partner to support and extend its video interviewing platform, helping the team ship improvements reliably.',
     solution: 'The Demski Group partnered with Willo to deliver custom development work supporting their video interviewing platform, helping the team ship improvements reliably and efficiently.',
     features: [
@@ -232,8 +232,8 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     tagline: 'Custom Development & Ongoing Technical Support.',
     industries: ['Technology'],
     techStack: ['JavaScript', 'Node.js', 'AWS'],
-    logo: 'https://demskigroup.com/wp-content/uploads/2024/06/Robomaster-1.png',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/06/Robomaster-1.png',
+    logo: '/wp-content/uploads/2024/06/Robomaster-1.png',
+    screenshot: '/wp-content/uploads/2024/06/Robomaster-1.png',
     project: 'Robomaster needed custom software development and ongoing technical support to bring its product vision to life.',
     solution: 'The Demski Group provided custom software development and ongoing technical support, helping Robomaster build reliable, well-built software aligned with its product goals.',
     features: [
@@ -428,8 +428,8 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     tagline: 'Custom Development Support for a Growing Brand.',
     industries: ['Technology'],
     techStack: ['JavaScript', 'React', 'Node.js'],
-    logo: 'https://demskigroup.com/wp-content/uploads/2024/08/newbitelogo.png',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/08/newbitelogo.png',
+    logo: '/wp-content/uploads/2024/08/newbitelogo.png',
+    screenshot: '/wp-content/uploads/2024/08/newbitelogo.png',
     project: 'Bite needed custom development support to help build and refine its product as the company grows.',
     solution: 'The Demski Group provided custom development support to help Bite build and refine its product, working closely with the team to deliver reliable results.',
     features: [
@@ -449,8 +449,8 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     tagline: 'Enterprise-Grade Development & Consulting.',
     industries: ['Enterprise Technology'],
     techStack: ['.NET', 'Java', 'Azure', 'AWS'],
-    logo: 'https://demskigroup.com/wp-content/uploads/2024/05/group-of-people-working.jpg',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/05/group-of-people-working.jpg',
+    logo: '/wp-content/uploads/2024/05/group-of-people-working.jpg',
+    screenshot: '/wp-content/uploads/2024/05/group-of-people-working.jpg',
     project: 'Hewlett Packard Enterprise needed software development and consulting work delivered to the rigorous standards expected of a global technology leader.',
     solution: 'The Demski Group delivered enterprise-grade software development and consulting work for Hewlett Packard Enterprise, meeting rigorous quality and reliability standards.',
     features: [
@@ -493,8 +493,8 @@ export const CLIENT_FALLBACKS: Record<string, ClientFallback> = {
     tagline: 'Redefining Global Boundaries.',
     industries: ['Technology', 'Consulting'],
     techStack: ['React', 'Node.js', 'AWS'],
-    logo: 'https://demskigroup.com/wp-content/uploads/2024/07/Nuborders.png',
-    screenshot: 'https://demskigroup.com/wp-content/uploads/2024/07/Nuborders.png',
+    logo: '/wp-content/uploads/2024/07/Nuborders.png',
+    screenshot: '/wp-content/uploads/2024/07/Nuborders.png',
     project: 'Nu Borders required a modernized online presence with a responsive React JS website that could keep pace with their growing business.',
     solution: 'The Demski Group developed an updated website for Nu Borders using React JS, featuring a modern, improved design and responsive layout to provide an optimal user experience across all devices.',
     features: [

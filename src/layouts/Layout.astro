@@ -11,7 +11,7 @@ const {
   title = 'The Demski Group | Custom Software Development',
   description = 'The Demski Group builds custom software, mobile apps, CRM systems, and web applications for businesses across the US. Schedule a free consultation today.',
   pageClass = '',
-  ogImage = 'https://demskigroup.com/wp-content/uploads/2024/06/Logo3-768x137.webp',
+  ogImage = '/wp-content/uploads/2024/06/Logo3-768x137.webp',
   canonical = Astro.url.href,
 } = Astro.props;
 
@@ -94,7 +94,7 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
       '@type': 'Organization',
       name: 'The Demski Group',
       url: 'https://demskigroup.com',
-      logo: 'https://demskigroup.com/wp-content/uploads/2024/06/Logo3-768x137.webp',
+      logo: '/wp-content/uploads/2024/06/Logo3-768x137.webp',
       email: 'contact@demskigroup.com',
       sameAs: [
         'https://www.facebook.com/demskigroup/',
