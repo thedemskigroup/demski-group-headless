@@ -597,6 +597,14 @@ export const prerender = true;
   });
 
   function submitForm() {
+    // Re-entrancy guard, same convention as the contact-us and
+    // ContactSection submit handlers: a rapid double-click/double-tap on
+    // Continue at the final step otherwise has nothing stopping it from
+    // calling submitForm() twice, which double-sends the lead — both the
+    // /api/send-lead POST (duplicate webhook + duplicate emails) and the
+    // dataLayer event.
+    if (continueBtn.disabled) return;
+    continueBtn.disabled = true;
     var data = {
       name: document.getElementById('cfName').value.trim(),
       company: document.getElementById('cfCompany').value.trim(),
@@ -632,11 +640,13 @@ export const prerender = true;
           cta_choice: 'Software Cost Calculator',
           page: location.pathname,
           page_name: document.title,
-          gclid: trk.gclid || '', gbraid: trk.gbraid || '',
+          gclid: trk.gclid || '', gbraid: trk.gbraid || '', wbraid: trk.wbraid || '',
           utm_campaign: trk.utm_campaign || '', utm_medium: trk.utm_medium || '',
           utm_source: trk.utm_source || '', utm_content: trk.utm_content || '',
           utm_term: trk.utm_term || '',
-          fbc: trk.fbc || '', fbp: trk.fbp || '', ga: trk.ga || ''
+          fbclid: trk.fbclid || '', fbc: trk.fbc || '', fbp: trk.fbp || '', ga: trk.ga || '',
+          landing_page: trk.landing_page || '', referrer: trk.referrer || '',
+          page_url: trk.page_url || location.href || ''
         };
       })())
     }).then(function (res) {

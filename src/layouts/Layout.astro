@@ -30,29 +30,43 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
             are managed by Cosmoforge INSIDE the container; this site only
             loads it and pushes dataLayer events.
          2) Attribution capture — mirrors the old site's behavior: utm_*,
-            gclid, and gbraid URL params are stored in 30-day cookies so the
-            values survive navigation, and are read back at form-submit time.
-            window.__dgTracking() returns all tracking identifiers (utm_*,
-            gclid, gbraid from cookies/URL; fbc/fbp/ga from the _fbc/_fbp/_ga
-            cookies set by Meta Pixel / GA inside GTM). Missing values come
-            back as '' — never throws. HTTP/script only: zero UI impact. -->
+            gclid, gbraid, wbraid and fbclid URL params are stored in 30-day
+            cookies so the values survive navigation, and are read back at
+            form-submit time. landing_page is captured once on first arrival
+            and deliberately never overwritten on later page views, so it
+            always reflects the page a visitor actually landed on rather
+            than whichever page they happened to submit a form from.
+            window.__dgTracking() returns every tracking identifier (the
+            cookies above; fbc/fbp/ga from the _fbc/_fbp/_ga cookies set by
+            Meta Pixel / GA inside GTM; referrer/page_url read live, not
+            cookied, since they're only meaningful for the current page).
+            Missing values come back as '' — never throws. HTTP/script
+            only: zero UI impact. This is the single source every lead
+            source (contact form, ContactSection, calculator, chatbot)
+            reads from — extend here, not per-form. -->
     <script is:inline>
       (function () {
         try {
-          var KEYS = ['utm_campaign', 'utm_medium', 'utm_source', 'utm_content', 'utm_term', 'gclid', 'gbraid'];
+          var KEYS = ['utm_campaign', 'utm_medium', 'utm_source', 'utm_content', 'utm_term', 'gclid', 'gbraid', 'wbraid', 'fbclid'];
           function getCookie(name) {
             try {
               var m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));
               return m ? decodeURIComponent(m[1]) : '';
             } catch (e) { return ''; }
           }
+          function setCookie(name, value) {
+            document.cookie = name + '=' + encodeURIComponent(value) + '; path=/; max-age=' + (30 * 24 * 60 * 60) + '; SameSite=Lax';
+          }
           try {
             var params = new URLSearchParams(location.search);
             for (var i = 0; i < KEYS.length; i++) {
               var v = params.get(KEYS[i]);
-              if (v) document.cookie = KEYS[i] + '=' + encodeURIComponent(v) + '; path=/; max-age=' + (30 * 24 * 60 * 60) + '; SameSite=Lax';
+              if (v) setCookie(KEYS[i], v);
             }
           } catch (e) { /* capture is best-effort */ }
+          try {
+            if (!getCookie('landing_page')) setCookie('landing_page', location.pathname + location.search);
+          } catch (e) { /* best-effort, never overwrites an existing value */ }
           window.__dgTracking = function () {
             var out = {};
             try {
@@ -60,6 +74,9 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
               out.fbc = getCookie('_fbc') || '';
               out.fbp = getCookie('_fbp') || '';
               out.ga = getCookie('_ga') || '';
+              out.landing_page = getCookie('landing_page') || '';
+              out.referrer = document.referrer || '';
+              out.page_url = location.href || '';
             } catch (e) { /* still return whatever we built */ }
             return out;
           };
