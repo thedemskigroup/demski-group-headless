@@ -241,11 +241,13 @@
         cta_choice: 'Contact Us',
         page: location.pathname,
         page_name: document.title,
-        gclid: trk.gclid || '', gbraid: trk.gbraid || '',
+        gclid: trk.gclid || '', gbraid: trk.gbraid || '', wbraid: trk.wbraid || '',
         utm_campaign: trk.utm_campaign || '', utm_medium: trk.utm_medium || '',
         utm_source: trk.utm_source || '', utm_content: trk.utm_content || '',
         utm_term: trk.utm_term || '',
-        fbc: trk.fbc || '', fbp: trk.fbp || '', ga: trk.ga || ''
+        fbclid: trk.fbclid || '', fbc: trk.fbc || '', fbp: trk.fbp || '', ga: trk.ga || '',
+        landing_page: trk.landing_page || '', referrer: trk.referrer || '',
+        page_url: trk.page_url || location.href || ''
       };
       fetch(leadEndpoint, {
         method: 'POST',
