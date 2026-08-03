@@ -739,7 +739,14 @@ const canonicalUrl = canonical.replace(/\/$/, '') || Astro.url.origin;
         if (loaded) return;
         loaded = true;
         var s = document.createElement('script');
-        s.src = 'https://demski-group-chatbot.vercel.app/widget.js';
+        /* Amplify deployment (d13spywfxx47ns) — the maintained one. The old
+           Vercel deployment (demski-group-chatbot.vercel.app) is stale: it
+           predates the GTM tracking events AND its /api/send-lead (which the
+           widget resolves relative to its own script origin) runs old code
+           with its own env vars, so leads sent there never reached the
+           Zapier webhook. Must match the origin used by ContactSection /
+           contact-us / calculator-form's leadEndpoint. */
+        s.src = 'https://main.d13spywfxx47ns.amplifyapp.com/widget.js';
         s.async = true;
         s.setAttribute('data-bot-name', 'Alex');
         s.setAttribute('data-bot-title', 'The Demski Group');
