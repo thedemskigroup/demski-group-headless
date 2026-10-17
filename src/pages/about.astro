@@ -1,24 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { wpList, POST_CARD_FIELDS, WP_PROD } from '../lib/wp';
 
-let posts = [];
-try {
-  const postsRes = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=6', { signal: AbortSignal.timeout(8000) });
-  if (postsRes.ok) {
-    const data = await postsRes.json();
-    if (Array.isArray(data)) posts = data;
-  }
-} catch (e) { posts = []; }
-
-let team = [];
-try {
-  const teamRes = await fetch('https://demskigroup.com/wp-json/wp/v2/team_member?_embed&per_page=20', { signal: AbortSignal.timeout(8000) });
-  if (teamRes.ok) {
-    const data = await teamRes.json();
-    if (Array.isArray(data)) team = data;
-  }
-} catch(e) { team = []; }
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
+// Both calls are independent; run them concurrently.
+const [posts, team] = await Promise.all([
+  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=6&${POST_CARD_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/team_member?_embed=wp:featuredmedia&per_page=20&_fields=id,slug,title,_links.wp:featuredmedia`),
+]);
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
 <Layout

@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD, WP_DEV } from '../../lib/wp';
 
 const page = Number(Astro.url.searchParams.get('page') || 1);
 const search = (Astro.url.searchParams.get('s') || '').trim();
@@ -76,22 +77,32 @@ function toCard(wp) {
 // on/after the pin date and not already pinned, so today's page is unchanged
 // and only genuinely new case studies appear. Any failure degrades to the
 // pinned list — the page never breaks.
-let autoPosts = [];
-const RESULTS_HOSTS = ['https://demskigrdev.wpenginepowered.com', 'https://demskigroup.com'];
-for (const host of RESULTS_HOSTS) {
-  try {
-    const res = await fetch(`${host}/wp-json/wp/v2/results?_embed&per_page=100&orderby=date&order=desc`, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) continue;
-    const data = await res.json();
-    if (!Array.isArray(data) || !data.length) continue;
+// toCard() only needs title/slug/date/excerpt/SEO description + featured
+// image, so ask WordPress for just those: the full-content version of this
+// query is ~1.6 MB and takes seconds to generate uncached.
+const RESULTS_CARD_FIELDS = '_embed=wp:featuredmedia&_fields=id,slug,date,title,excerpt,yoast_head_json.og_description,_links.wp:featuredmedia';
+const RESULTS_HOSTS = [WP_DEV, WP_PROD];
+
+async function fetchResultCards() {
+  for (const host of RESULTS_HOSTS) {
+    const data = await wpList(`${host}/wp-json/wp/v2/results?per_page=100&orderby=date&order=desc&${RESULTS_CARD_FIELDS}`);
+    if (!data.length) continue;
     const since = new Date(AUTO_APPEND_SINCE + 'T00:00:00');
-    autoPosts = data
+    return data
       .filter(wp => wp && wp.slug && !PINNED_SLUGS.has(wp.slug) && new Date(wp.date) >= since)
       .map(toCard)
       .filter(c => c.title);
-    break;
-  } catch (e) { /* try next host, else keep the pinned list only */ }
+  }
+  return []; // keep the pinned list only
 }
+
+// Case studies and the sidebar lists are independent; fetch concurrently.
+const [autoPosts, recentPosts, categories, tags] = await Promise.all([
+  fetchResultCards(),
+  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=5&${POST_CARD_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/categories?per_page=20&${TERM_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
+]);
 
 // New case studies (newest first) sit above the pinned, already-published set.
 const allPosts = [...autoPosts, ...PINNED_POSTS];
@@ -106,33 +117,6 @@ const totalPages = Math.ceil(totalResults / perPage);
 const posts = filtered.slice((page - 1) * perPage, page * perPage);
 const searchParam = search ? `&s=${encodeURIComponent(search)}` : '';
 
-// Sidebar data
-let recentPosts = [];
-try {
-  const recentRes = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=5', { signal: AbortSignal.timeout(8000) });
-  if (recentRes.ok) {
-    const data = await recentRes.json();
-    if (Array.isArray(data)) recentPosts = data;
-  }
-} catch (e) { recentPosts = []; }
-
-let categories = [];
-try {
-  const catRes = await fetch('https://demskigroup.com/wp-json/wp/v2/categories?per_page=20', { signal: AbortSignal.timeout(8000) });
-  if (catRes.ok) {
-    const data = await catRes.json();
-    if (Array.isArray(data)) categories = data;
-  }
-} catch (e) { categories = []; }
-
-let tags = [];
-try {
-  const tagRes = await fetch('https://demskigroup.com/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc', { signal: AbortSignal.timeout(8000) });
-  if (tagRes.ok) {
-    const data = await tagRes.json();
-    if (Array.isArray(data)) tags = data;
-  }
-} catch (e) { tags = []; }
 ---
 
 <Layout

@@ -1,6 +1,7 @@
 ﻿---
 import Layout from '../../layouts/Layout.astro';
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=3600');
+import { wpList, WP_PROD } from '../../lib/wp';
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 
 const KNOWN_IMAGES: Record<string,string> = {
   'biopac':'/wp-content/uploads/2024/07/Biopac.png',
@@ -33,18 +34,20 @@ function extractPhoto(item: any) {
   return item._embedded?.['wp:featuredmedia']?.[0]?.source_url || item.acf?.featured_image?.url || item.acf?.image?.url || '';
 }
 
+// This section shows Biopac plus the 12 most recent other clients. Fetch
+// exactly that (13 newest + Biopac by slug, concurrently) with card fields
+// only. The previous "every client with _embed" query was ~6.7 MB and took
+// up to 24 s for WordPress to generate uncached, which blew the 8 s budget
+// and left the page waiting on a timeout before falling back.
+const CLIENT_CARD_FIELDS = '_embed=wp:featuredmedia&_fields=id,slug,link,title,excerpt,_links.wp:featuredmedia';
 let svcClients: any[] = [];
 try {
-  let all: any[] = [], page = 1, totalPages = 1;
-  do {
-    const res = await fetch(`https://demskigroup.com/wp-json/wp/v2/our-clients?_embed&per_page=100&page=${page}`, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) break;
-    const tp = res.headers.get('X-WP-TotalPages');
-    if (tp) totalPages = parseInt(tp);
-    const data = await res.json();
-    if (!Array.isArray(data) || !data.length) break;
-    all = [...all, ...data]; page++;
-  } while (page <= totalPages);
+  const [recent, biopac] = await Promise.all([
+    wpList(`${WP_PROD}/wp-json/wp/v2/our-clients?per_page=13&${CLIENT_CARD_FIELDS}`),
+    wpList(`${WP_PROD}/wp-json/wp/v2/our-clients?slug=biopac&${CLIENT_CARD_FIELDS}`),
+  ]);
+  const seen = new Set<number>();
+  const all = [...biopac, ...recent].filter((item: any) => item?.id && !seen.has(item.id) && seen.add(item.id));
   svcClients = all.map((item: any) => ({
     id: item.id, name: clean(item.title?.rendered), slug: item.slug||'',
     link: normalizeLink(item.link, item.slug),

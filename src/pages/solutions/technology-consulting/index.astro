@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import { wpList, WP_PROD, WP_DEV } from '../../../lib/wp';
 import ContactSection from '../../../components/ContactSection.astro';
 
 const assetBase = '/solutions/technology-consulting';
@@ -47,20 +48,19 @@ function normalizeClientLink(link, slug) {
 }
 
 const WP_CLIENT_URLS = [
-  'https://demskigroup.com/wp-json/wp/v2/our-clients',
-  'https://demskigrdev.wpenginepowered.com/wp-json/wp/v2/our-clients',
+  `${WP_PROD}/wp-json/wp/v2/our-clients`,
+  `${WP_DEV}/wp-json/wp/v2/our-clients`,
 ];
+// Only the fields the cards below read. Without this the query returns the
+// full Elementor content of every client page (several MB).
+const CASE_FIELDS = '_embed=wp:featuredmedia,wp:term&_fields=id,slug,link,title,excerpt,_links.wp:featuredmedia,_links.wp:term';
 
 let cases: Array<{ tag: string; name: string; description: string; image: string; tone: string; link: string }> = [];
 
 for (const base of WP_CLIENT_URLS) {
   try {
-    const res = await fetch(`${base}?_embed&per_page=100&orderby=menu_order&order=asc`, {
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) continue;
-    const data = await res.json();
-    if (!Array.isArray(data) || !data.length) continue;
+    const data = await wpList(`${base}?per_page=100&orderby=menu_order&order=asc&${CASE_FIELDS}`);
+    if (!data.length) continue;
     cases = data.map((item: any, i: number) => ({
       tag:         cleanHtml(item._embedded?.['wp:term']?.[0]?.[0]?.name || ''),
       name:        cleanHtml(item.title?.rendered),
@@ -73,7 +73,7 @@ for (const base of WP_CLIENT_URLS) {
   } catch(_) { continue; }
 }
 
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=3600');
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 if (!cases.length) {
   cases = [
     { tag: 'Biotechnology', name: 'BIOPAC Systems, Inc.', description: 'The Demski Group successfully delivered a scalable and efficient web application for Biopac, enabling users to perform and track scientific studies online.', image: '/solutions/sales-lead-tracking-tools/Biopac-white.png', tone: 'dark', link: '/our-clients/biopac/' },

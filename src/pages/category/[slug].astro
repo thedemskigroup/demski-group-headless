@@ -1,23 +1,26 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { wpFetch, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD } from '../../lib/wp';
 
 const { slug } = Astro.params;
 const page = Number(Astro.url.searchParams.get('page') || 1);
 const perPage = 10;
 
+// The category lookup and the three sidebar lists are independent, so they
+// run concurrently. Only the posts query (below) has to wait for the
+// category ID.
+const [catRes, allCategories, tags, recentPosts] = await Promise.all([
+  wpFetch(`${WP_PROD}/wp-json/wp/v2/categories?slug=${slug}&${TERM_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/categories?per_page=20&hide_empty=true&${TERM_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=5&${POST_CARD_FIELDS}`),
+]);
+
 // Get category info
 let category = null;
 let categoryLookupFailed = false;
-try {
-  const catRes = await fetch(`https://demskigroup.com/wp-json/wp/v2/categories?slug=${slug}`, { signal: AbortSignal.timeout(8000) });
-  if (catRes.ok) {
-    const cats = await catRes.json();
-    if (Array.isArray(cats)) category = cats[0] ?? null;
-    else categoryLookupFailed = true;
-  } else {
-    categoryLookupFailed = true;
-  }
-} catch (e) { categoryLookupFailed = true; }
+if (catRes.ok && Array.isArray(catRes.data)) category = catRes.data[0] ?? null;
+else categoryLookupFailed = true;
 
 // Only redirect when the API call succeeded but the category genuinely
 // doesn't exist. If the API itself failed (timeout/network/non-OK/invalid
@@ -36,49 +39,18 @@ let posts = [];
 let totalPages = 1;
 let postsLoadFailed = false;
 if (category?.id) {
-  try {
-    const postsRes = await fetch(`https://demskigroup.com/wp-json/wp/v2/posts?_embed&categories=${category.id}&per_page=${perPage}&page=${page}`, { signal: AbortSignal.timeout(8000) });
-    if (postsRes.ok) {
-      const data = await postsRes.json();
-      if (Array.isArray(data)) posts = data;
-      else postsLoadFailed = true;
-      totalPages = Number(postsRes.headers.get('X-WP-TotalPages') || 1);
-    } else {
-      postsLoadFailed = true;
-    }
-  } catch (e) { postsLoadFailed = true; }
+  const postsRes = await wpFetch(`${WP_PROD}/wp-json/wp/v2/posts?categories=${category.id}&per_page=${perPage}&page=${page}&${POST_CARD_FIELDS}`);
+  if (postsRes.ok && Array.isArray(postsRes.data)) {
+    posts = postsRes.data;
+    totalPages = postsRes.totalPages;
+  } else {
+    postsLoadFailed = true;
+  }
 } else {
   // Category lookup itself failed - we have no ID to query posts by.
   postsLoadFailed = categoryLookupFailed;
 }
 
-// Sidebar data
-let allCategories = [];
-try {
-  const allCatRes = await fetch('https://demskigroup.com/wp-json/wp/v2/categories?per_page=20&hide_empty=true', { signal: AbortSignal.timeout(8000) });
-  if (allCatRes.ok) {
-    const data = await allCatRes.json();
-    if (Array.isArray(data)) allCategories = data;
-  }
-} catch (e) { allCategories = []; }
-
-let tags = [];
-try {
-  const tagRes = await fetch('https://demskigroup.com/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc', { signal: AbortSignal.timeout(8000) });
-  if (tagRes.ok) {
-    const data = await tagRes.json();
-    if (Array.isArray(data)) tags = data;
-  }
-} catch (e) { tags = []; }
-
-let recentPosts = [];
-try {
-  const recentRes = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=5', { signal: AbortSignal.timeout(8000) });
-  if (recentRes.ok) {
-    const data = await recentRes.json();
-    if (Array.isArray(data)) recentPosts = data;
-  }
-} catch (e) { recentPosts = []; }
 ---
 
 <Layout title={`${categoryName} - The Demski Group Blog`} description={`Browse all posts in the ${categoryName} category.`}>

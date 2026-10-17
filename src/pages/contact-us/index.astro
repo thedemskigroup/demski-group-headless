@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { wpList, WP_PROD, WP_DEV } from '../../lib/wp';
 
 function cleanT(str: string) {
   return (str || '').replace(/&amp;/g,'&').replace(/&#8217;/g,"'").replace(/&#8216;/g,"'")
@@ -14,28 +15,24 @@ function normalizeLink(link: string, slug: string) {
 let testimonials: Array<{logo:string;logoAlt:string;quote:string;author:string;role:string;link:string}> = [];
 
 const WP_REVIEW_URLS = [
-  'https://demskigroup.com/wp-json/wp/v2/reviews?_embed&per_page=100',
-  'https://demskigrdev.wpenginepowered.com/wp-json/wp/v2/reviews?_embed&per_page=100',
+  `${WP_PROD}/wp-json/wp/v2/reviews?_embed&per_page=100`,
+  `${WP_DEV}/wp-json/wp/v2/reviews?_embed&per_page=100`,
 ];
-for (const url of WP_REVIEW_URLS) {
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) continue;
-    const data = await res.json();
-    if (!Array.isArray(data) || !data.length) continue;
-    testimonials = data.map((item: any) => ({
-      logo:    item._embedded?.['wp:featuredmedia']?.[0]?.source_url || '',
-      logoAlt: cleanT(item.title?.rendered),
-      quote:   cleanT(item.acf?.testimonial || item.acf?.quote || item.acf?.review || item.content?.rendered || ''),
-      author:  cleanT(item.acf?.author_name || item.acf?.name || item.title?.rendered),
-      role:    cleanT(item.acf?.author_role || item.acf?.position || item.acf?.role || ''),
-      link:    normalizeLink(item.acf?.case_study_url || item.link, item.slug),
-    }));
-    break;
-  } catch(_) { continue; }
+// Query both hosts concurrently; the first (in order) with any reviews wins.
+const reviewLists = await Promise.all(WP_REVIEW_URLS.map((url) => wpList(url)));
+const reviewData = reviewLists.find((list) => list.length) || [];
+if (reviewData.length) {
+  testimonials = reviewData.map((item: any) => ({
+    logo:    item._embedded?.['wp:featuredmedia']?.[0]?.source_url || '',
+    logoAlt: cleanT(item.title?.rendered),
+    quote:   cleanT(item.acf?.testimonial || item.acf?.quote || item.acf?.review || item.content?.rendered || ''),
+    author:  cleanT(item.acf?.author_name || item.acf?.name || item.title?.rendered),
+    role:    cleanT(item.acf?.author_role || item.acf?.position || item.acf?.role || ''),
+    link:    normalizeLink(item.acf?.case_study_url || item.link, item.slug),
+  }));
 }
 
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 const offices = [
   { name: 'The Demski Group', address: '237 Delaware Ave #7', cityState: 'Olean, NY 14760', phone: '716-687-0840' },
   { address: '250 East 5th Street 15th floor', cityState: 'Cincinnati, OH 45202', phone: '513-643-8442' },
