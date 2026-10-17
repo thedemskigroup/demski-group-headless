@@ -1,52 +1,29 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { wpFirst, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD, WP_DEV } from '../../lib/wp';
 
 const { slug } = Astro.params;
-let post: any = null;
-try {
-  const r1 = await fetch(`https://demskigrdev.wpenginepowered.com/wp-json/wp/v2/results?slug=${slug}&_embed`, { signal: AbortSignal.timeout(8000) });
-  if (r1.ok) { const d = await r1.json(); if (Array.isArray(d) && d.length > 0) post = d[0]; }
-} catch(e) {}
-if (!post) {
-  try {
-    const r2 = await fetch(`https://demskigroup.com/wp-json/wp/v2/results?slug=${slug}&_embed`, { signal: AbortSignal.timeout(8000) });
-    if (r2.ok) { const d = await r2.json(); if (Array.isArray(d) && d.length > 0) post = d[0]; }
-  } catch(e) {}
-}
+// Dev WPEngine is the primary host for results, demskigroup.com the
+// fallback. That lookup and the three sidebar lists are independent, so they
+// run concurrently; sidebar lists come from the in-memory cache after the
+// first render.
+let [post, recentPosts, categories, tags] = await Promise.all([
+  (async () => {
+    const primary = await wpFirst<any>(`${WP_DEV}/wp-json/wp/v2/results?slug=${slug}&_embed=wp:featuredmedia,wp:term`);
+    return primary ?? wpFirst<any>(`${WP_PROD}/wp-json/wp/v2/results?slug=${slug}&_embed=wp:featuredmedia,wp:term`);
+  })(),
+  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=5&${POST_CARD_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/categories?per_page=20&${TERM_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
+]);
 if (post && (!post.title?.rendered || !post.content?.rendered)) post = null;
 if (!post) Astro.response.status = 404;
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 
 const date = post ? new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 const featuredImg = post?._embedded?.['wp:featuredmedia']?.[0]?.source_url;
 const cat = post?._embedded?.['wp:term']?.[0]?.[0];
 
-let recentPosts = [];
-try {
-  const recentRes = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=5', { signal: AbortSignal.timeout(8000) });
-  if (recentRes.ok) {
-    const data = await recentRes.json();
-    if (Array.isArray(data)) recentPosts = data;
-  }
-} catch (e) { recentPosts = []; }
-
-let categories = [];
-try {
-  const catRes = await fetch('https://demskigroup.com/wp-json/wp/v2/categories?per_page=20', { signal: AbortSignal.timeout(8000) });
-  if (catRes.ok) {
-    const data = await catRes.json();
-    if (Array.isArray(data)) categories = data;
-  }
-} catch (e) { categories = []; }
-
-let tags = [];
-try {
-  const tagRes = await fetch('https://demskigroup.com/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc', { signal: AbortSignal.timeout(8000) });
-  if (tagRes.ok) {
-    const data = await tagRes.json();
-    if (Array.isArray(data)) tags = data;
-  }
-} catch (e) { tags = []; }
 ---
 
 <Layout

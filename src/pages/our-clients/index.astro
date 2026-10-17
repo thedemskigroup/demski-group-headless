@@ -1,7 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { wpFetch, wpList } from '../../lib/wp';
 import { CLIENT_FALLBACKS } from '../../data/clientFallbacks';
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 
 const WP_BASE = 'https://demskigroup.com/wp-json/wp/v2/our-clients';
 
@@ -58,22 +59,18 @@ const FALLBACK_CLIENTS: any[] = Object.entries(CLIENT_FALLBACKS).map(([slug, dat
   desc: data.tagline,
 }));
 
-const LIST_FIELDS = '_fields=id,slug,link,title,excerpt,featured_media,_links.wp:featuredmedia';
+const LIST_FIELDS = '_embed=wp:featuredmedia&_fields=id,slug,link,title,excerpt,featured_media,_links.wp:featuredmedia';
 
 let clients: any[] = [];
 try {
-  const first = await fetch(`${WP_BASE}?_embed&per_page=100&page=1&${LIST_FIELDS}`, { signal: AbortSignal.timeout(8000) });
-  if (first.ok) {
-    const totalPages = parseInt(first.headers.get('X-WP-TotalPages') || '1');
-    const firstData = await first.json();
+  const first = await wpFetch<any[]>(`${WP_BASE}?per_page=100&page=1&${LIST_FIELDS}`);
+  if (first.ok && Array.isArray(first.data)) {
     const restPages = await Promise.all(
-      Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) =>
-        fetch(`${WP_BASE}?_embed&per_page=100&page=${i + 2}&${LIST_FIELDS}`, { signal: AbortSignal.timeout(8000) })
-          .then(r => r.ok ? r.json() : [])
-          .catch(() => [])
+      Array.from({ length: Math.max(0, first.totalPages - 1) }, (_, i) =>
+        wpList(`${WP_BASE}?per_page=100&page=${i + 2}&${LIST_FIELDS}`)
       )
     );
-    const all = [...(Array.isArray(firstData) ? firstData : []), ...restPages.flat()];
+    const all = [...first.data, ...restPages.flat()];
     clients = all.map((item: any) => ({
       id: item.id, name: clean(item.title?.rendered), slug: item.slug||'',
       link: normalizeLink(item.link, item.slug), photo: extractPhoto(item),

@@ -1,24 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { wpList, POST_CARD_FIELDS, WP_PROD } from '../lib/wp';
 
-let posts = [];
-try {
-  const postsRes = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=6', { signal: AbortSignal.timeout(8000) });
-  if (postsRes.ok) {
-    const data = await postsRes.json();
-    if (Array.isArray(data)) posts = data;
-  }
-} catch (e) { posts = []; }
-
-let team = [];
-try {
-  const teamRes = await fetch('https://demskigroup.com/wp-json/wp/v2/team_member?_embed&per_page=20', { signal: AbortSignal.timeout(8000) });
-  if (teamRes.ok) {
-    const data = await teamRes.json();
-    if (Array.isArray(data)) team = data;
-  }
-} catch(e) { team = []; }
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
+// Team members are static markup below. WordPress no longer exposes a
+// `team_member` post type (404 on prod and dev), so we do not query for them.
+const posts = await wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=6&${POST_CARD_FIELDS}`);
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
 <Layout
@@ -1083,21 +1070,9 @@ html { overflow-x: hidden; }
   </div>
 
   <div class="team-photos-wrap">
-    {team.length > 0 ? team.slice(0,3).map((member: any) => {
-      const img = member._embedded?.['wp:featuredmedia']?.[0]?.source_url;
-      return (
         <div class="team-member-wrap">
           <div class="team-photo-item">
-            {img && <img src={img} alt={member.title.rendered} width="1024" height="1024" loading="lazy" decoding="async" />}
-          </div>
-          <div class="team-photo-name">{member.title.rendered}</div>
-        </div>
-      );
-    }) : (
-      <>
-        <div class="team-member-wrap">
-          <div class="team-photo-item">
-            <img src="/wp-content/uploads/2024/07/Andrew%402x-2.png" alt="Andrew Demski" width="1024" height="1024" loading="lazy" decoding="async" />
+            <img src="/wp-content/uploads/2024/07/Andrew-2x-2.png" alt="Andrew Demski" width="1024" height="1024" loading="lazy" decoding="async" />
           </div>
           <div class="team-photo-name">Andrew Demski</div>
         </div>
@@ -1113,8 +1088,6 @@ html { overflow-x: hidden; }
           </div>
           <div class="team-photo-name">Aaron Demski</div>
         </div>
-      </>
-    )}
   </div>
 
   <div class="exp-team-wrap">

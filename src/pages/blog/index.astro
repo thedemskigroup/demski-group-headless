@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { wpFetch, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD } from '../../lib/wp';
 
 
 const page = Number(Astro.url.searchParams.get('page') || 1);
@@ -8,37 +9,16 @@ const perPage = 10;
 
 const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
 
-let posts = [];
-let totalPages = 1;
-let totalResults = 0;
-try {
-  const res = await fetch(`https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}${searchParam}`, { signal: AbortSignal.timeout(8000) });
-  if (res.ok) {
-    const data = await res.json();
-    if (Array.isArray(data)) posts = data;
-    totalPages = Number(res.headers.get('X-WP-TotalPages') || 1);
-    totalResults = Number(res.headers.get('X-WP-Total') || 0);
-  }
-} catch (e) { posts = []; }
-
-let categories = [];
-try {
-  const catRes = await fetch('https://demskigroup.com/wp-json/wp/v2/categories?per_page=20', { signal: AbortSignal.timeout(8000) });
-  if (catRes.ok) {
-    const data = await catRes.json();
-    if (Array.isArray(data)) categories = data;
-  }
-} catch (e) { categories = []; }
-
-let tags = [];
-try {
-  const tagRes = await fetch('https://demskigroup.com/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc', { signal: AbortSignal.timeout(8000) });
-  if (tagRes.ok) {
-    const data = await tagRes.json();
-    if (Array.isArray(data)) tags = data;
-  }
-} catch (e) { tags = []; }
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=3600');
+// Posts + sidebar taxonomies are independent; fetch them concurrently.
+const [postsRes, categories, tags] = await Promise.all([
+  wpFetch(`${WP_PROD}/wp-json/wp/v2/posts?per_page=${perPage}&page=${page}${searchParam}&${POST_CARD_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/categories?per_page=20&${TERM_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
+]);
+const posts = postsRes.ok && Array.isArray(postsRes.data) ? postsRes.data : [];
+const totalPages = postsRes.ok ? postsRes.totalPages : 1;
+const totalResults = postsRes.ok ? postsRes.total : 0;
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
 <Layout

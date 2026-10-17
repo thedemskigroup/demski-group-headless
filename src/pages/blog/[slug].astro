@@ -1,50 +1,26 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { wpFirst, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD } from '../../lib/wp';
 
 const { slug } = Astro.params;
 
-let post = null;
-try {
-  const res = await fetch(`https://demskigroup.com/wp-json/wp/v2/posts?slug=${slug}&_embed`, { signal: AbortSignal.timeout(8000) });
-  if (res.ok) {
-    const posts = await res.json();
-    if (Array.isArray(posts)) post = posts[0] ?? null;
-    if (post && (!post.title?.rendered || !post.content?.rendered)) post = null;
-  }
-} catch (e) { post = null; }
+// The post itself plus the three sidebar lists are independent, so fetch
+// them concurrently. Sidebar lists are shared across every blog page and
+// served from the in-memory cache after the first render.
+let [post, recentPosts, categories, tags] = await Promise.all([
+  wpFirst(`${WP_PROD}/wp-json/wp/v2/posts?slug=${slug}&_embed=wp:featuredmedia,wp:term`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=5&${POST_CARD_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/categories?per_page=20&${TERM_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
+]);
+if (post && (!post.title?.rendered || !post.content?.rendered)) post = null;
 if (!post) Astro.response.status = 404;
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=7200');
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 
 const date = post ? new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 const featuredImg = post?._embedded?.['wp:featuredmedia']?.[0]?.source_url;
 const cat = post?._embedded?.['wp:term']?.[0]?.[0];
 
-let recentPosts = [];
-try {
-  const recentRes = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=5', { signal: AbortSignal.timeout(8000) });
-  if (recentRes.ok) {
-    const data = await recentRes.json();
-    if (Array.isArray(data)) recentPosts = data;
-  }
-} catch (e) { recentPosts = []; }
-
-let categories = [];
-try {
-  const catRes = await fetch('https://demskigroup.com/wp-json/wp/v2/categories?per_page=20', { signal: AbortSignal.timeout(8000) });
-  if (catRes.ok) {
-    const data = await catRes.json();
-    if (Array.isArray(data)) categories = data;
-  }
-} catch (e) { categories = []; }
-
-let tags = [];
-try {
-  const tagRes = await fetch('https://demskigroup.com/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc', { signal: AbortSignal.timeout(8000) });
-  if (tagRes.ok) {
-    const data = await tagRes.json();
-    if (Array.isArray(data)) tags = data;
-  }
-} catch (e) { tags = []; }
 ---
 
 <Layout

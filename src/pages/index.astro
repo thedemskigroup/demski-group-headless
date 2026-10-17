@@ -1,39 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
-
-function cleanT(str: string) {
-  return (str || '').replace(/&amp;/g,'&').replace(/&#8217;/g,"'").replace(/&#8216;/g,"'")
-    .replace(/&#8220;/g,'"').replace(/&#8221;/g,'"').replace(/&#8230;/g,'…')
-    .replace(/<[^>]*>/g,'').trim();
-}
-function normalizeLink(link: string, slug: string) {
-  return (link || '').replace('https://demskigrdev.wpenginepowered.com','').replace('https://demskigroup.com','')
-    || `/our-clients/${slug}/`;
-}
+import { wpList, POST_CARD_FIELDS, WP_PROD } from '../lib/wp';
 
 let posts = [];
 let results = [];
-let testimonials: Array<{logo:string;logoAlt:string;quote:string;author:string;role:string;link:string}> = [];
 
-try {
-  const res = await fetch('https://demskigroup.com/wp-json/wp/v2/posts?_embed&per_page=6', { signal: AbortSignal.timeout(8000) });
-  if (res.ok) {
-    const data = await res.json();
-    if (Array.isArray(data)) posts = data;
-  }
-} catch (e) {
-  console.warn('Blog posts fetch failed:', e?.message);
-}
+// Testimonials are static markup below. WordPress no longer exposes a
+// `reviews` post type (404 on prod and dev), so we do not query for them.
 
-try {
-  const resultsRes = await fetch('https://demskigroup.com/wp-json/wp/v2/results?_embed&per_page=6', { signal: AbortSignal.timeout(8000) });
-  if (resultsRes.ok) {
-    const data = await resultsRes.json();
-    if (Array.isArray(data)) results = data;
-  }
-} catch (e) {
-  console.warn('Results fetch failed:', e?.message);
-}
+// The two WordPress calls are independent, so run them concurrently and
+// only ask for the fields the cards below actually render.
+const [postsData, resultsData] = await Promise.all([
+  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=6&${POST_CARD_FIELDS}`),
+  wpList(`${WP_PROD}/wp-json/wp/v2/results?per_page=6&${POST_CARD_FIELDS}`),
+]);
+posts = postsData;
+results = resultsData;
 
 // Static fallback used when the live WordPress API is unavailable, so the
 // "Real Results" slider never renders empty. Mirrors a few real entries
@@ -53,28 +35,7 @@ if (!results.length) {
   }));
 }
 
-const WP_REVIEW_URLS = [
-  'https://demskigroup.com/wp-json/wp/v2/reviews?_embed&per_page=100',
-  'https://demskigrdev.wpenginepowered.com/wp-json/wp/v2/reviews?_embed&per_page=100',
-];
-for (const url of WP_REVIEW_URLS) {
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) continue;
-    const data = await res.json();
-    if (!Array.isArray(data) || !data.length) continue;
-    testimonials = data.map((item: any) => ({
-      logo:    item._embedded?.['wp:featuredmedia']?.[0]?.source_url || '',
-      logoAlt: cleanT(item.title?.rendered),
-      quote:   cleanT(item.acf?.testimonial || item.acf?.quote || item.acf?.review || item.content?.rendered || ''),
-      author:  cleanT(item.acf?.author_name || item.acf?.name || item.title?.rendered),
-      role:    cleanT(item.acf?.author_role || item.acf?.position || item.acf?.role || ''),
-      link:    normalizeLink(item.acf?.case_study_url || item.link, item.slug),
-    }));
-    break;
-  } catch(_) { continue; }
-}
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=3600');
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
 <Layout
@@ -1872,27 +1833,6 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
     <div class="tslider-clip">
     <div class="testimonial-slider" id="tslider">
 
-      {testimonials.length > 0 ? testimonials.map(t => (
-        <div class="testimonial-card-new">
-          <div class="tcard-top">
-            <div class="tcard-quote">❝❝</div>
-            <div class="tcard-logo">
-              {t.logo
-                ? <img src={t.logo} alt={t.logoAlt} width="120" height="36" loading="lazy" />
-                : <span class="tcard-logo-text">{t.logoAlt}</span>
-              }
-            </div>
-          </div>
-          <p class="tcard-body">{t.quote}</p>
-          <div class="tcard-footer">
-            <div>
-              <div class="tcard-author">{t.author}</div>
-              <div class="tcard-role">{t.role}</div>
-            </div>
-            <a href={t.link} class="tcard-case">Read case study <span class="svc-arrow"></span></a>
-          </div>
-        </div>
-      )) : (
       <div class="testimonial-card-new">
         <div class="tcard-top">
           <div class="tcard-quote">❝❝</div>
@@ -2192,7 +2132,6 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
           <a href="/our-clients" class="tcard-case">Read case study <span class="svc-arrow"></span></a>
         </div>
       </div>
-      )}
 
     </div>
     </div>
