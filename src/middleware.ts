@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { isPublicHost } from './lib/site';
 
 // Adds baseline security response headers to every SSR response. These are
 // HTTP metadata only — they do not change any rendered HTML, styling, or
@@ -22,9 +23,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Staging guard: the *.amplifyapp.com preview domain must not be indexed by
   // search engines as duplicate content against the real production site
-  // (demskigroup.com). Emit noindex ONLY for that host — the production custom
-  // domain, when attached, is unaffected and stays fully indexable.
-  if (context.url.hostname.endsWith('amplifyapp.com')) {
+  // (demskigroup.com). Emit noindex ONLY when the visitor is NOT on the
+  // production domain. Requests proxied from demskigroup.com by the
+  // Cloudflare Worker arrive with the Amplify hostname but carry
+  // X-Forwarded-Host: demskigroup.com, and those must stay indexable.
+  if (context.url.hostname.endsWith('amplifyapp.com') && !isPublicHost(context.request)) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
 
