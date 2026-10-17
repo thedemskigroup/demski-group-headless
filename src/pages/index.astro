@@ -1,32 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { wpList, POST_CARD_FIELDS, WP_PROD, WP_DEV } from '../lib/wp';
-
-function cleanT(str: string) {
-  return (str || '').replace(/&amp;/g,'&').replace(/&#8217;/g,"'").replace(/&#8216;/g,"'")
-    .replace(/&#8220;/g,'"').replace(/&#8221;/g,'"').replace(/&#8230;/g,'…')
-    .replace(/<[^>]*>/g,'').trim();
-}
-function normalizeLink(link: string, slug: string) {
-  return (link || '').replace('https://demskigrdev.wpenginepowered.com','').replace('https://demskigroup.com','')
-    || `/our-clients/${slug}/`;
-}
+import { wpList, POST_CARD_FIELDS, WP_PROD } from '../lib/wp';
 
 let posts = [];
 let results = [];
-let testimonials: Array<{logo:string;logoAlt:string;quote:string;author:string;role:string;link:string}> = [];
 
-const WP_REVIEW_URLS = [
-  `${WP_PROD}/wp-json/wp/v2/reviews?_embed&per_page=100`,
-  `${WP_DEV}/wp-json/wp/v2/reviews?_embed&per_page=100`,
-];
+// Testimonials are static markup below. WordPress no longer exposes a
+// `reviews` post type (404 on prod and dev), so we do not query for them.
 
-// The three WordPress calls are independent, so run them concurrently and
+// The two WordPress calls are independent, so run them concurrently and
 // only ask for the fields the cards below actually render.
-const [postsData, resultsData, reviewLists] = await Promise.all([
+const [postsData, resultsData] = await Promise.all([
   wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=6&${POST_CARD_FIELDS}`),
   wpList(`${WP_PROD}/wp-json/wp/v2/results?per_page=6&${POST_CARD_FIELDS}`),
-  Promise.all(WP_REVIEW_URLS.map((url) => wpList(url))),
 ]);
 posts = postsData;
 results = resultsData;
@@ -49,18 +35,6 @@ if (!results.length) {
   }));
 }
 
-// First host (in order) that returned any reviews wins, same as before.
-const reviewData = reviewLists.find((list) => list.length) || [];
-if (reviewData.length) {
-  testimonials = reviewData.map((item: any) => ({
-    logo:    item._embedded?.['wp:featuredmedia']?.[0]?.source_url || '',
-    logoAlt: cleanT(item.title?.rendered),
-    quote:   cleanT(item.acf?.testimonial || item.acf?.quote || item.acf?.review || item.content?.rendered || ''),
-    author:  cleanT(item.acf?.author_name || item.acf?.name || item.title?.rendered),
-    role:    cleanT(item.acf?.author_role || item.acf?.position || item.acf?.role || ''),
-    link:    normalizeLink(item.acf?.case_study_url || item.link, item.slug),
-  }));
-}
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
@@ -1859,27 +1833,6 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
     <div class="tslider-clip">
     <div class="testimonial-slider" id="tslider">
 
-      {testimonials.length > 0 ? testimonials.map(t => (
-        <div class="testimonial-card-new">
-          <div class="tcard-top">
-            <div class="tcard-quote">❝❝</div>
-            <div class="tcard-logo">
-              {t.logo
-                ? <img src={t.logo} alt={t.logoAlt} width="120" height="36" loading="lazy" />
-                : <span class="tcard-logo-text">{t.logoAlt}</span>
-              }
-            </div>
-          </div>
-          <p class="tcard-body">{t.quote}</p>
-          <div class="tcard-footer">
-            <div>
-              <div class="tcard-author">{t.author}</div>
-              <div class="tcard-role">{t.role}</div>
-            </div>
-            <a href={t.link} class="tcard-case">Read case study <span class="svc-arrow"></span></a>
-          </div>
-        </div>
-      )) : (
       <div class="testimonial-card-new">
         <div class="tcard-top">
           <div class="tcard-quote">❝❝</div>
@@ -2179,7 +2132,6 @@ footer { background: #ffffff; color: #282828; padding: 0; margin-top: 0 !importa
           <a href="/our-clients" class="tcard-case">Read case study <span class="svc-arrow"></span></a>
         </div>
       </div>
-      )}
 
     </div>
     </div>
