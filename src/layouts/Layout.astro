@@ -7,6 +7,12 @@ interface Props {
   pageClass?: string;
   ogImage?: string;
   canonical?: string;
+  /** 'article' for blog posts; adds article:* meta. */
+  ogType?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
+  /** Extra JSON-LD documents (e.g. Yoast's graph for a post), one <script> each. */
+  jsonLd?: object[];
 }
 
 const {
@@ -15,6 +21,10 @@ const {
   pageClass = '',
   ogImage = '/wp-content/uploads/2024/06/Logo3-768x137.webp',
   canonical = Astro.url.href,
+  ogType = 'website',
+  publishedTime,
+  modifiedTime,
+  jsonLd = [],
 } = Astro.props;
 
 // Always express the canonical URL against the public domain, never the
@@ -110,7 +120,7 @@ const ogImageUrl = /^https?:\/\//.test(ogImage) ? ogImage : `https://${Astro.url
     <link rel="canonical" href={canonicalUrl} />
 
     <!-- Open Graph / Social -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -119,15 +129,19 @@ const ogImageUrl = /^https?:\/\//.test(ogImage) ? ogImage : `https://${Astro.url
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    <link rel="alternate" type="application/rss+xml" title="The Demski Group Blog" href="https://demskigroup.com/feed.xml" />
 
     <!-- Structured data: Organization -->
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Organization',
+      '@id': 'https://demskigroup.com/#organization',
       name: 'The Demski Group',
       url: 'https://demskigroup.com',
-      logo: '/wp-content/uploads/2024/06/Logo3-768x137.webp',
+      logo: 'https://demskigroup.com/wp-content/uploads/2024/03/Logo-Light.svg',
       email: 'contact@demskigroup.com',
       sameAs: [
         'https://www.facebook.com/demskigroup/',
@@ -145,6 +159,7 @@ const ogImageUrl = /^https?:\/\//.test(ogImage) ? ogImage : `https://${Astro.url
         { '@type': 'PostalAddress', streetAddress: '1001 S. Main St. #8131', addressLocality: 'Kalispell', addressRegion: 'MT', postalCode: '59901', addressCountry: 'US' },
       ],
     })} />
+    {jsonLd.map((doc) => <script type="application/ld+json" set:html={JSON.stringify(doc)} />)}
 
     <!-- Favicons -->
     <link rel="icon" href="/favicon.ico" sizes="any" />

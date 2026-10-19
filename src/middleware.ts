@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { isPublicHost } from './lib/site';
+import { legacyRedirect } from './lib/redirects';
 
 // Adds baseline security response headers to every SSR response. These are
 // HTTP metadata only — they do not change any rendered HTML, styling, or
@@ -8,6 +9,13 @@ import { isPublicHost } from './lib/site';
 // would risk the design/functionality. CSP can be added later with careful
 // per-source testing.
 export const onRequest = defineMiddleware(async (context, next) => {
+  // Legacy WordPress URLs: only consulted when nothing here matches the
+  // request (Astro routes it to the 404 page), so real pages pay nothing.
+  if (context.routePattern === '/404' && (context.request.method === 'GET' || context.request.method === 'HEAD')) {
+    const dest = await legacyRedirect(context.url.pathname);
+    if (dest) return context.redirect(dest + context.url.search, 301);
+  }
+
   const response = await next();
 
   // Prevent MIME-type sniffing.
