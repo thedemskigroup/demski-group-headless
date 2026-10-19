@@ -117,3 +117,28 @@ export const CDN_CACHE_CONTROL = 'public, s-maxage=3600, stale-while-revalidate=
 export const POST_CARD_FIELDS = '_embed=wp:featuredmedia,wp:term&_fields=id,slug,date,title,excerpt,_links.wp:featuredmedia,_links.wp:term';
 // Taxonomy sidebars.
 export const TERM_FIELDS = '_fields=id,name,slug,count';
+
+/**
+ * Every published slug for a WordPress post type, following pagination.
+ * Tries each host in order; returns [] if none respond. Pages are served
+ * through wpFetch, so repeat calls within the TTL cost nothing.
+ */
+export async function wpAllSlugs(hosts: string[], type: string, ttlMs = 60 * 60 * 1000): Promise<string[]> {
+  for (const host of hosts) {
+    const collected: string[] = [];
+    let page = 1;
+    let totalPages = 1;
+    do {
+      const r = await wpFetch<any[]>(
+        `${host}/wp-json/wp/v2/${type}?per_page=100&page=${page}&_fields=slug&orderby=date&order=desc`,
+        { ttlMs },
+      );
+      if (!r.ok || !Array.isArray(r.data)) break;
+      totalPages = r.totalPages || 1;
+      for (const item of r.data) if (item?.slug) collected.push(item.slug);
+      page++;
+    } while (page <= totalPages && page <= 20);
+    if (collected.length) return collected;
+  }
+  return [];
+}

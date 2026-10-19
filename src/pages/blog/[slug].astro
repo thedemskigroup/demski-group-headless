@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { wpFirst, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD } from '../../lib/wp';
+import { postSeo } from '../../lib/seo';
 
 const { slug } = Astro.params;
 
@@ -20,13 +21,21 @@ Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-
 const date = post ? new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 const featuredImg = post?._embedded?.['wp:featuredmedia']?.[0]?.source_url;
 const cat = post?._embedded?.['wp:term']?.[0]?.[0];
+// Title, description, OG image, dates and schema.org graph as written in
+// Yoast on WordPress, so the post keeps its SEO data on this site.
+const seo = postSeo(post);
+const excerptText = (post?.excerpt?.rendered || '').replace(/<[^>]*>/g,'').replace(/\[&hellip;\]/g,'').trim().slice(0,160);
 
 ---
 
 <Layout
-  title={post ? `${post.title.rendered} | The Demski Group` : 'Post Not Found'}
-  description={post ? (post.excerpt?.rendered || '').replace(/<[^>]*>/g,'').replace(/\[&hellip;\]/g,'').trim().slice(0,160) : undefined}
-  ogImage={featuredImg || undefined}
+  title={post ? (seo.title || `${post.title.rendered} | The Demski Group`) : 'Post Not Found'}
+  description={post ? (seo.description || excerptText) : undefined}
+  ogImage={seo.ogImage || featuredImg || undefined}
+  ogType={post ? 'article' : 'website'}
+  publishedTime={seo.publishedTime}
+  modifiedTime={seo.modifiedTime}
+  jsonLd={seo.jsonLd}
 >
 
   <style is:global>
