@@ -1,5 +1,5 @@
 ---
-import { canonicalFor, SITE_ORIGIN } from '../lib/site';
+import { canonicalFor } from '../lib/site';
 
 interface Props {
   title?: string;
@@ -21,6 +21,9 @@ const {
 // host that happened to serve the request (e.g. the Amplify URL when the
 // page is reached through the Cloudflare proxy). See src/lib/site.ts.
 const canonicalUrl = canonicalFor(canonical);
+// og:image must point where the file actually lives: this app's own
+// public/ folder, i.e. the host that served the page (always https).
+const ogImageUrl = /^https?:\/\//.test(ogImage) ? ogImage : `https://${Astro.url.host}${ogImage}`;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -111,7 +114,7 @@ const canonicalUrl = canonicalFor(canonical);
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={new URL(ogImage, SITE_ORIGIN).href} />
+    <meta property="og:image" content={ogImageUrl} />
     <meta property="og:site_name" content="The Demski Group" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
