@@ -1,14 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { wpFirst, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD } from '../../lib/wp';
+import { wpFirst, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_ORIGIN } from '../../lib/wp';
 
 const { slug } = Astro.params;
 
-const tag = await wpFirst<any>(`${WP_PROD}/wp-json/wp/v2/tags?slug=${slug}&${TERM_FIELDS}`, { timeoutMs: 6000 });
+const tag = await wpFirst<any>(`${WP_ORIGIN}/wp-json/wp/v2/tags?slug=${slug}&${TERM_FIELDS}`, { timeoutMs: 6000 });
 
 let posts: any[] = [];
 if (tag?.id) {
-  posts = await wpList(`${WP_PROD}/wp-json/wp/v2/posts?tags=${tag.id}&per_page=10&${POST_CARD_FIELDS}`, { timeoutMs: 6000 });
+  posts = await wpList(`${WP_ORIGIN}/wp-json/wp/v2/posts?tags=${tag.id}&per_page=10&${POST_CARD_FIELDS}`, { timeoutMs: 6000 });
 }
 
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');

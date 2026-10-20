@@ -1,6 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import { wpList, WP_PROD, WP_DEV } from '../../../lib/wp';
+import { wpList, WP_ORIGIN } from '../../../lib/wp';
 import ContactSection from '../../../components/ContactSection.astro';
 
 const assetBase = '/solutions/technology-consulting';
@@ -47,31 +47,23 @@ function normalizeClientLink(link, slug) {
     || `/our-clients/${slug}/`;
 }
 
-const WP_CLIENT_URLS = [
-  `${WP_PROD}/wp-json/wp/v2/our-clients`,
-  `${WP_DEV}/wp-json/wp/v2/our-clients`,
-];
 // Only the fields the cards below read. Without this the query returns the
 // full Elementor content of every client page (several MB).
 const CASE_FIELDS = '_embed=wp:featuredmedia,wp:term&_fields=id,slug,link,title,excerpt,_links.wp:featuredmedia,_links.wp:term';
 
 let cases: Array<{ tag: string; name: string; description: string; image: string; tone: string; link: string }> = [];
 
-for (const base of WP_CLIENT_URLS) {
-  try {
-    const data = await wpList(`${base}?per_page=100&orderby=menu_order&order=asc&${CASE_FIELDS}`);
-    if (!data.length) continue;
-    cases = data.map((item: any, i: number) => ({
-      tag:         cleanHtml(item._embedded?.['wp:term']?.[0]?.[0]?.name || ''),
-      name:        cleanHtml(item.title?.rendered),
-      description: cleanHtml(item.excerpt?.rendered).replace(/\[…\]/g,'').replace(/\[&hellip;\]/g,''),
-      image:       item._embedded?.['wp:featuredmedia']?.[0]?.source_url || '',
-      tone:        CASE_TONES[i % CASE_TONES.length],
-      link:        normalizeClientLink(item.link, item.slug),
-    }));
-    break;
-  } catch(_) { continue; }
-}
+try {
+  const data = await wpList(`${WP_ORIGIN}/wp-json/wp/v2/our-clients?per_page=100&orderby=menu_order&order=asc&${CASE_FIELDS}`);
+  cases = data.map((item: any, i: number) => ({
+    tag:         cleanHtml(item._embedded?.['wp:term']?.[0]?.[0]?.name || ''),
+    name:        cleanHtml(item.title?.rendered),
+    description: cleanHtml(item.excerpt?.rendered).replace(/\[…\]/g,'').replace(/\[&hellip;\]/g,''),
+    image:       item._embedded?.['wp:featuredmedia']?.[0]?.source_url || '',
+    tone:        CASE_TONES[i % CASE_TONES.length],
+    link:        normalizeClientLink(item.link, item.slug),
+  }));
+} catch(_) { cases = []; }
 
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 if (!cases.length) {
@@ -95,7 +87,7 @@ if (!cases.length) {
   pageClass="tech-consulting-page"
 >
   <!-- Preload hero background -->
-  <link rel="preload" href="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2025/07/team-discussing-automotive-design-project-in-moder-2025-10-19-03-58-54-utc-scaled.jpg" as="image" slot="head" />
+  <link rel="preload" href="/wp-content/uploads/2025/07/team-discussing-automotive-design-project-in-moder-2025-10-19-03-58-54-utc-scaled.jpg" as="image" slot="head" />
 
   <style slot="head">
     /* ── Page tokens ── */
@@ -195,7 +187,7 @@ if (!cases.length) {
       padding-right: 80px;
       background:
   linear-gradient(to right, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.10) 100%),
-  url('https://demskigrdev.wpenginepowered.com/wp-content/uploads/2025/07/team-discussing-automotive-design-project-in-moder-2025-10-19-03-58-54-utc-scaled.jpg') center 39% / cover no-repeat;
+  url('/wp-content/uploads/2025/07/team-discussing-automotive-design-project-in-moder-2025-10-19-03-58-54-utc-scaled.jpg') center 39% / cover no-repeat;
       color: #fff;
       display: flex;
       align-items: flex-start;
@@ -1064,9 +1056,9 @@ if (!cases.length) {
         </a>
       </div>
       <div class="hero-badges" aria-label="Review badges">
-        <img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2025/06/Clutch2024.png" alt="Clutch 2024 Top Software Developers badge" width="148" height="148" loading="lazy" />
-<img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2025/06/Clutch2023.png" alt="Clutch 2023 Top Software Developers badge" width="148" height="148" loading="lazy" />
-<img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2025/06/Google.png" alt="Google five star review badge" width="148" height="148" loading="lazy" />
+        <img src="/wp-content/uploads/2025/06/Clutch2024.png" alt="Clutch 2024 Top Software Developers badge" width="148" height="148" loading="lazy" />
+<img src="/wp-content/uploads/2025/06/Clutch2023.png" alt="Clutch 2023 Top Software Developers badge" width="148" height="148" loading="lazy" />
+<img src="/wp-content/uploads/2025/06/Google.png" alt="Google five star review badge" width="148" height="148" loading="lazy" />
       </div>
     </section>
 
@@ -1108,7 +1100,7 @@ if (!cases.length) {
       </div>
       <img
         class="feature-image"
-        src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2025/07/senior-engineer-mentoring-a-junior-female-develope-2025-09-18-03-58-54-utc.jpg"
+        src="/wp-content/uploads/2025/07/senior-engineer-mentoring-a-junior-female-develope-2025-09-18-03-58-54-utc.jpg"
         alt="Senior engineer mentoring a junior developer"
         width="1024" height="683"
         loading="lazy"
@@ -1151,7 +1143,7 @@ if (!cases.length) {
       </div>
       <img
         class="feature-image"
-        src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2025/04/engineer-working-on-chip-development-2025-03-06-13-42-24-utc-1024x683.jpg"
+        src="/wp-content/uploads/2025/04/engineer-working-on-chip-development-2025-03-06-13-42-24-utc-1024x683.jpg"
         alt="Software engineer working on technology solutions"
         width="1024" height="683"
         loading="lazy"
@@ -1187,7 +1179,7 @@ if (!cases.length) {
       <aside class="why-card">
         <div class="why-card-img-frame">
           <img
-            src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2025/05/colleagues-in-office-using-computer-2024-10-18-17-41-53-utc-1024x683.jpg"
+            src="/wp-content/uploads/2025/05/colleagues-in-office-using-computer-2024-10-18-17-41-53-utc-1024x683.jpg"
             alt="Technology consulting team working together"
             width="1024" height="683"
             loading="lazy"

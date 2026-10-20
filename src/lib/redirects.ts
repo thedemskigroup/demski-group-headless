@@ -7,7 +7,7 @@
  * (post-, page-, results-, category-, post_tag-, author-sitemap.xml),
  * compared against this site's sitemap on 2026-10-19.
  */
-import { wpAllSlugs, WP_PROD } from './wp';
+import { wpAllSlugs, WP_ORIGIN } from './wp';
 
 /** Exact paths (leading and trailing slash) → destination. */
 const EXACT: Record<string, string> = {
@@ -125,7 +125,7 @@ export async function legacyRedirect(pathname: string): Promise<string | null> {
 
   const m = p.match(/^\/([a-z0-9][a-z0-9-]*)\/$/);
   if (m) {
-    const slugs = await wpAllSlugs([WP_PROD], 'posts');
+    const slugs = await wpAllSlugs([WP_ORIGIN], 'posts');
     if (slugs.includes(m[1])) return `/blog/${m[1]}/`;
   }
   return null;

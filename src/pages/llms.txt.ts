@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { wpList, WP_PROD, WP_DEV, CDN_CACHE_CONTROL } from '../lib/wp';
+import { wpList, WP_ORIGIN, CDN_CACHE_CONTROL } from '../lib/wp';
 import { SITE_ORIGIN } from '../lib/site';
 
 // llms.txt: a plain-markdown map of the site for AI answer engines and LLM
@@ -32,10 +32,8 @@ const PAGES: Array<[string, string, string]> = [
 
 export const GET: APIRoute = async () => {
   const [results, posts] = await Promise.all([
-    wpList<any>(`${WP_DEV}/wp-json/wp/v2/results?per_page=100&_fields=slug,title`).then(
-      (r) => (r.length ? r : wpList<any>(`${WP_PROD}/wp-json/wp/v2/results?per_page=100&_fields=slug,title`)),
-    ),
-    wpList<any>(`${WP_PROD}/wp-json/wp/v2/posts?per_page=40&_fields=slug,title`),
+    wpList<any>(`${WP_ORIGIN}/wp-json/wp/v2/results?per_page=100&_fields=slug,title`),
+    wpList<any>(`${WP_ORIGIN}/wp-json/wp/v2/posts?per_page=40&_fields=slug,title`),
   ]);
 
   const lines: string[] = [

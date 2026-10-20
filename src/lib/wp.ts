@@ -101,8 +101,17 @@ export async function wpFirst<T = any>(url: string, opts?: WpFetchOptions): Prom
   return list[0] ?? null;
 }
 
-export const WP_PROD = 'https://demskigroup.com';
-export const WP_DEV = 'https://demskigrdev.wpenginepowered.com';
+// Origin of the WordPress install every REST call goes to. demskigroup.com
+// stays on WP Engine, and during the traffic split a Cloudflare Worker always
+// routes /wp-json and /wp-content there, so this keeps working while pages
+// move to this app. Set the WP_ORIGIN env var to point at another install.
+// Never point this at the WP Engine development environment: it is a separate
+// WordPress, not a mirror of production.
+export const WP_ORIGIN = (
+  (typeof process !== 'undefined' && process.env?.WP_ORIGIN) ||
+  import.meta.env.WP_ORIGIN ||
+  'https://demskigroup.com'
+).replace(/\/+$/, '');
 
 // CDN cache policy for SSR marketing pages. Content changes rarely, so
 // CloudFront may serve a page for an hour and keep serving the stale copy
