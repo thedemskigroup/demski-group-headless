@@ -1,10 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { wpList, POST_CARD_FIELDS, WP_PROD } from '../lib/wp';
+import { wpList, POST_CARD_FIELDS, WP_ORIGIN } from '../lib/wp';
 
 // Team members are static markup below. WordPress no longer exposes a
 // `team_member` post type (404 on prod and dev), so we do not query for them.
-const posts = await wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=6&${POST_CARD_FIELDS}`);
+const posts = await wpList(`${WP_ORIGIN}/wp-json/wp/v2/posts?per_page=6&${POST_CARD_FIELDS}`);
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
@@ -850,7 +850,7 @@ html { overflow-x: hidden; }
 .about-cta-bg {
   position: absolute;
   inset: 0;
-  background-image: url('https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/cropped-shot-of-a-group-of-creatives-having-a-meet-2023-11-27-04-53-10-utc-1.jpg');
+  background-image: url('/wp-content/uploads/2024/06/cropped-shot-of-a-group-of-creatives-having-a-meet-2023-11-27-04-53-10-utc-1.jpg');
   background-size: cover;
   background-position: center;
   filter: brightness(0.45);
@@ -1047,7 +1047,7 @@ html { overflow-x: hidden; }
       <p>Based out of Olean, New York and with branches in Ohio and Montana, The Demski Group is focused on creating software applications to accelerate your business.</p>
     </div>
     <div class="about-hero-image">
-      <img src="https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/06/cropped-cropped-1.png" alt="The Demski Group" width="600" height="450" decoding="async" />
+      <img src="/wp-content/uploads/2024/06/cropped-cropped-1.png" alt="The Demski Group" width="600" height="450" decoding="async" />
     </div>
   </div>
 </section>

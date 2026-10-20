@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { wpFetch, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD } from '../../lib/wp';
+import { wpFetch, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_ORIGIN } from '../../lib/wp';
 
 
 const page = Number(Astro.url.searchParams.get('page') || 1);
@@ -11,9 +11,9 @@ const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
 
 // Posts + sidebar taxonomies are independent; fetch them concurrently.
 const [postsRes, categories, tags] = await Promise.all([
-  wpFetch(`${WP_PROD}/wp-json/wp/v2/posts?per_page=${perPage}&page=${page}${searchParam}&${POST_CARD_FIELDS}`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/categories?per_page=20&${TERM_FIELDS}`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
+  wpFetch(`${WP_ORIGIN}/wp-json/wp/v2/posts?per_page=${perPage}&page=${page}${searchParam}&${POST_CARD_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/categories?per_page=20&${TERM_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
 ]);
 const posts = postsRes.ok && Array.isArray(postsRes.data) ? postsRes.data : [];
 const totalPages = postsRes.ok ? postsRes.totalPages : 1;

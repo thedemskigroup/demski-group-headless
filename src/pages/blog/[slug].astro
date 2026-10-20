@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { wpFirst, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD } from '../../lib/wp';
+import { wpFirst, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_ORIGIN } from '../../lib/wp';
 import { postSeo } from '../../lib/seo';
 
 const { slug } = Astro.params;
@@ -9,10 +9,10 @@ const { slug } = Astro.params;
 // them concurrently. Sidebar lists are shared across every blog page and
 // served from the in-memory cache after the first render.
 let [post, recentPosts, categories, tags] = await Promise.all([
-  wpFirst(`${WP_PROD}/wp-json/wp/v2/posts?slug=${slug}&_embed=wp:featuredmedia,wp:term`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=5&${POST_CARD_FIELDS}`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/categories?per_page=20&${TERM_FIELDS}`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
+  wpFirst(`${WP_ORIGIN}/wp-json/wp/v2/posts?slug=${slug}&_embed=wp:featuredmedia,wp:term`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/posts?per_page=5&${POST_CARD_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/categories?per_page=20&${TERM_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
 ]);
 if (post && (!post.title?.rendered || !post.content?.rendered)) post = null;
 if (!post) Astro.response.status = 404;

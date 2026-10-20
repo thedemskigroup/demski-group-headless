@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { wpList, POST_CARD_FIELDS, WP_PROD } from '../lib/wp';
+import { wpList, POST_CARD_FIELDS, WP_ORIGIN } from '../lib/wp';
 
 let posts = [];
 let results = [];
@@ -11,8 +11,8 @@ let results = [];
 // The two WordPress calls are independent, so run them concurrently and
 // only ask for the fields the cards below actually render.
 const [postsData, resultsData] = await Promise.all([
-  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=6&${POST_CARD_FIELDS}`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/results?per_page=6&${POST_CARD_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/posts?per_page=6&${POST_CARD_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/results?per_page=6&${POST_CARD_FIELDS}`),
 ]);
 posts = postsData;
 results = resultsData;
@@ -21,10 +21,10 @@ results = resultsData;
 // "Real Results" slider never renders empty. Mirrors a few real entries
 // from the Results listing page (src/pages/results/index.astro).
 const FALLBACK_RESULTS = [
-  { slug: 'making-property-listings-and-home-buying-simpler-with-a-well-organized-online-platform', title: 'Making Property Listings and Home Buying Simpler with a Well-Organized Online Platform', date: 'May 27, 2026', img: 'https://demskigrdev.wpenginepowered.com/wp-content/uploads/2026/05/young-woman-calculates-finances-at-home-office-2026-03-17-09-03-36-utc-1024x683.jpg' },
-  { slug: 'automating-aircraft-appraisal-with-a-smart-web-platform', title: 'Automating Aircraft Appraisal with a Smart Web Platform', date: 'May 23, 2026', img: 'https://demskigrdev.wpenginepowered.com/wp-content/uploads/2026/05/aircraft-mechanic-inspecting-engine-with-tablet-de-2026-03-26-08-38-07-utc-1024x683.jpg' },
-  { slug: 'combining-campaigns-products-and-communities-in-one-platform', title: 'Combining Campaigns, Products, and Communities in One Platform', date: 'May 17, 2026', img: 'https://demskigrdev.wpenginepowered.com/wp-content/uploads/2026/05/crowdsourcing-concept-on-a-laptop-on-a-desk-2026-03-18-11-48-41-utc-1024x681.jpg' },
-  { slug: 'managing-the-complexities-of-vehicle-repossession-with-a-mobile-first-application', title: 'Managing the Complexities of Vehicle Repossession with a Mobile-First Application', date: 'May 10, 2026', img: 'https://demskigrdev.wpenginepowered.com/wp-content/uploads/2026/05/man-on-phone-with-car-on-tow-truck-2026-03-25-09-09-37-utc-1024x683.jpg' },
+  { slug: 'making-property-listings-and-home-buying-simpler-with-a-well-organized-online-platform', title: 'Making Property Listings and Home Buying Simpler with a Well-Organized Online Platform', date: 'May 27, 2026', img: '/wp-content/uploads/2026/05/young-woman-calculates-finances-at-home-office-2026-03-17-09-03-36-utc-1024x683.jpg' },
+  { slug: 'automating-aircraft-appraisal-with-a-smart-web-platform', title: 'Automating Aircraft Appraisal with a Smart Web Platform', date: 'May 23, 2026', img: '/wp-content/uploads/2026/05/aircraft-mechanic-inspecting-engine-with-tablet-de-2026-03-26-08-38-07-utc-1024x683.jpg' },
+  { slug: 'combining-campaigns-products-and-communities-in-one-platform', title: 'Combining Campaigns, Products, and Communities in One Platform', date: 'May 17, 2026', img: '/wp-content/uploads/2026/05/crowdsourcing-concept-on-a-laptop-on-a-desk-2026-03-18-11-48-41-utc-1024x681.jpg' },
+  { slug: 'managing-the-complexities-of-vehicle-repossession-with-a-mobile-first-application', title: 'Managing the Complexities of Vehicle Repossession with a Mobile-First Application', date: 'May 10, 2026', img: '/wp-content/uploads/2026/05/man-on-phone-with-car-on-tow-truck-2026-03-25-09-09-37-utc-1024x683.jpg' },
 ];
 if (!results.length) {
   results = FALLBACK_RESULTS.map(r => ({

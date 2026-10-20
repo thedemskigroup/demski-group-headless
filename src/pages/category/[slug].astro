@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { wpFetch, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_PROD } from '../../lib/wp';
+import { wpFetch, wpList, POST_CARD_FIELDS, TERM_FIELDS, WP_ORIGIN } from '../../lib/wp';
 
 const { slug } = Astro.params;
 const page = Number(Astro.url.searchParams.get('page') || 1);
@@ -10,10 +10,10 @@ const perPage = 10;
 // run concurrently. Only the posts query (below) has to wait for the
 // category ID.
 const [catRes, allCategories, tags, recentPosts] = await Promise.all([
-  wpFetch(`${WP_PROD}/wp-json/wp/v2/categories?slug=${slug}&${TERM_FIELDS}`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/categories?per_page=20&hide_empty=true&${TERM_FIELDS}`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
-  wpList(`${WP_PROD}/wp-json/wp/v2/posts?per_page=5&${POST_CARD_FIELDS}`),
+  wpFetch(`${WP_ORIGIN}/wp-json/wp/v2/categories?slug=${slug}&${TERM_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/categories?per_page=20&hide_empty=true&${TERM_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/tags?per_page=100&orderby=name&order=asc&${TERM_FIELDS}`),
+  wpList(`${WP_ORIGIN}/wp-json/wp/v2/posts?per_page=5&${POST_CARD_FIELDS}`),
 ]);
 
 // Get category info
@@ -39,7 +39,7 @@ let posts = [];
 let totalPages = 1;
 let postsLoadFailed = false;
 if (category?.id) {
-  const postsRes = await wpFetch(`${WP_PROD}/wp-json/wp/v2/posts?categories=${category.id}&per_page=${perPage}&page=${page}&${POST_CARD_FIELDS}`);
+  const postsRes = await wpFetch(`${WP_ORIGIN}/wp-json/wp/v2/posts?categories=${category.id}&per_page=${perPage}&page=${page}&${POST_CARD_FIELDS}`);
   if (postsRes.ok && Array.isArray(postsRes.data)) {
     posts = postsRes.data;
     totalPages = postsRes.totalPages;

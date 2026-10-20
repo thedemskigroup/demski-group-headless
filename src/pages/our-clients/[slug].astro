@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { normalizeClient, CLIENT_FALLBACKS } from '../../data/clientFallbacks';
+import { WP_ORIGIN } from '../../lib/wp';
 
 const { slug } = Astro.params as { slug: string };
 
@@ -49,10 +50,7 @@ const otherClients = Object.entries(CLIENT_FALLBACKS)
   .map(([s, d]) => ({ slug: s, title: d.title, logo: KNOWN_LOGOS[s] || d.logo, graphic: GRAPHIC_CARDS[s] || null }))
   .sort((a, b) => (b.graphic ? 1 : 0) - (a.graphic ? 1 : 0));
 
-const WP_URLS = [
-  `https://demskigroup.com/wp-json/wp/v2/our-clients?slug=${slug}&_embed`,
-  `https://demskigrdev.wpenginepowered.com/wp-json/wp/v2/our-clients?slug=${slug}&_embed`,
-];
+const WP_URL = `${WP_ORIGIN}/wp-json/wp/v2/our-clients?slug=${slug}&_embed`;
 
 // In-memory cache, keyed by slug, surviving for the life of the server
 // process. Bespoke per-slug designs (biopac's premium hero/sidebar/results
@@ -72,18 +70,14 @@ const cachedEntry = API_CACHE.get(slug);
 if (cachedEntry && cachedEntry.expires > Date.now()) {
   apiItem = cachedEntry.item;
 } else {
-  // Race both mirrors instead of trying them sequentially — halves the
-  // worst-case wait when one host is slow rather than simply unreachable.
-  const fetches = WP_URLS.map(async (url) => {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) throw new Error(`bad status ${res.status}`);
-    const data = await res.json();
-    if (Array.isArray(data) && data.length) return data[0];
-    throw new Error('empty result');
-  });
-  const results = await Promise.allSettled(fetches);
-  for (const r of results) {
-    if (r.status === 'fulfilled') { apiItem = r.value; break; }
+  try {
+    const res = await fetch(WP_URL, { signal: AbortSignal.timeout(10000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length) apiItem = data[0];
+    }
+  } catch (e) {
+    console.warn('[our-clients] WordPress fetch failed:', slug, (e as Error)?.message);
   }
   if (apiItem) API_CACHE.set(slug, { item: apiItem, expires: Date.now() + 5 * 60 * 1000 });
 }

@@ -1,10 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { wpFetch, wpList } from '../../lib/wp';
+import { wpFetch, wpList, WP_ORIGIN } from '../../lib/wp';
 import { CLIENT_FALLBACKS } from '../../data/clientFallbacks';
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 
-const WP_BASE = 'https://demskigroup.com/wp-json/wp/v2/our-clients';
+const WP_BASE = `${WP_ORIGIN}/wp-json/wp/v2/our-clients`;
 
 function clean(s: string) {
   return (s||'').replace(/&amp;/g,'&').replace(/&#8217;/g,"'").replace(/&#8216;/g,"'").replace(/<[^>]*>/g,'').trim();

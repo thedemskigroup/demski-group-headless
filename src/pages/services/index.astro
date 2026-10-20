@@ -1,6 +1,6 @@
 ﻿---
 import Layout from '../../layouts/Layout.astro';
-import { wpList, WP_PROD } from '../../lib/wp';
+import { wpList, WP_ORIGIN } from '../../lib/wp';
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 
 const KNOWN_IMAGES: Record<string,string> = {
@@ -43,8 +43,8 @@ const CLIENT_CARD_FIELDS = '_embed=wp:featuredmedia&_fields=id,slug,link,title,e
 let svcClients: any[] = [];
 try {
   const [recent, biopac] = await Promise.all([
-    wpList(`${WP_PROD}/wp-json/wp/v2/our-clients?per_page=13&${CLIENT_CARD_FIELDS}`),
-    wpList(`${WP_PROD}/wp-json/wp/v2/our-clients?slug=biopac&${CLIENT_CARD_FIELDS}`),
+    wpList(`${WP_ORIGIN}/wp-json/wp/v2/our-clients?per_page=13&${CLIENT_CARD_FIELDS}`),
+    wpList(`${WP_ORIGIN}/wp-json/wp/v2/our-clients?slug=biopac&${CLIENT_CARD_FIELDS}`),
   ]);
   const seen = new Set<number>();
   const all = [...biopac, ...recent].filter((item: any) => item?.id && !seen.has(item.id) && seen.add(item.id));
@@ -91,7 +91,7 @@ h1, h2, h3, h4, h5, h6 {
   top: 0; right: 0;
   width: 100%;
   height: 100%;
-  background-image: url('https://demskigrdev.wpenginepowered.com/wp-content/uploads/2024/07/busy-colleagues-analyzing-computer-code-2023-11-27-05-16-26-utc-1-scaled.jpg');
+  background-image: url('/wp-content/uploads/2024/07/busy-colleagues-analyzing-computer-code-2023-11-27-05-16-26-utc-1-scaled.jpg');
   background-size: cover;
   background-position: center;
   z-index: 0;

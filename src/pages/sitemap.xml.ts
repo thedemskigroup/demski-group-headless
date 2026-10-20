@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { CLIENT_FALLBACKS } from '../data/clientFallbacks';
+import { WP_ORIGIN } from '../lib/wp';
 
 const SITE = 'https://demskigroup.com';
 
@@ -113,13 +114,12 @@ export const GET: APIRoute = async () => {
   // Static pages — always included.
   for (const route of STATIC_ROUTES) urls.add(SITE + route);
 
-  // Case studies — live from WordPress (dev WPEngine primary, demskigroup.com
-  // fallback) so newly published case studies are indexed automatically. On a
-  // total fetch failure, degrade to the previously hardcoded slugs. The live
-  // list naturally excludes case studies that no longer exist in WordPress
-  // (whose detail pages would 404).
+  // Case studies — live from WordPress so newly published case studies are
+  // indexed automatically. On a total fetch failure, degrade to the
+  // previously hardcoded slugs. The live list naturally excludes case studies
+  // that no longer exist in WordPress (whose detail pages would 404).
   const resultsSlugs = (await fetchAllSlugs(
-    ['https://demskigrdev.wpenginepowered.com', 'https://demskigroup.com'],
+    [WP_ORIGIN],
     'results',
   )) ?? RESULTS_SLUGS_FALLBACK;
   for (const slug of resultsSlugs) urls.add(`${SITE}/results/${slug}/`);
@@ -128,7 +128,7 @@ export const GET: APIRoute = async () => {
   // (each fallback slug still renders a valid page via CLIENT_FALLBACKS, so no
   // 404s). New clients are indexed automatically.
   const liveClients = await fetchAllSlugs(
-    ['https://demskigroup.com', 'https://demskigrdev.wpenginepowered.com'],
+    [WP_ORIGIN],
     'our-clients',
   );
   const clientSlugs = liveClients
@@ -139,7 +139,7 @@ export const GET: APIRoute = async () => {
   // Blog posts — live, following pagination (previously capped at a single
   // page of 100). Empty on failure, matching the prior behavior of omitting
   // blog URLs when WordPress is unreachable.
-  const blogSlugs = (await fetchAllSlugs(['https://demskigroup.com'], 'posts')) ?? [];
+  const blogSlugs = (await fetchAllSlugs([WP_ORIGIN], 'posts')) ?? [];
   for (const slug of blogSlugs) urls.add(`${SITE}/blog/${slug}/`);
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${Array.from(urls).map(urlTag).join('\n')}\n</urlset>\n`;

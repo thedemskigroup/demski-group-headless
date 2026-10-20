@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { wpList, WP_PROD, CDN_CACHE_CONTROL } from '../lib/wp';
+import { wpList, WP_ORIGIN, CDN_CACHE_CONTROL } from '../lib/wp';
 import { SITE_ORIGIN } from '../lib/site';
 
 // RSS 2.0 feed of the latest blog posts. WordPress served one at /feed/;
@@ -12,7 +12,7 @@ const text = (html: string) =>
 
 export const GET: APIRoute = async () => {
   const posts = await wpList<any>(
-    `${WP_PROD}/wp-json/wp/v2/posts?per_page=20&_fields=slug,date_gmt,title,excerpt,content`,
+    `${WP_ORIGIN}/wp-json/wp/v2/posts?per_page=20&_fields=slug,date_gmt,title,excerpt,content`,
   );
 
   const items = posts
